@@ -1,25 +1,27 @@
+"""โมดูลคำนวณความผันผวนและจำลองมูลค่าเงินลงทุนด้วย Monte Carlo"""
+
 import random
 import math
 
 
 def calculate_volatility(returns):
     """
-    Calculate daily and annualized volatility from historical daily returns.
+    คำนวณความผันผวนจากผลตอบแทนรายวันในอดีต
 
-    Args:
-        returns (list): A list of historical daily returns.
+    รับค่า:
+        returns: รายการผลตอบแทนรายวัน เช่น [0.01, -0.02, 0.015]
 
-    Returns:
-        dict: Mean return, variance, daily standard deviation,
-              and annualized volatility.
+    ส่งกลับ:
+        dict: ค่าเฉลี่ยผลตอบแทน ความแปรปรวน ส่วนเบี่ยงเบนมาตรฐานรายวัน
+              และความผันผวนต่อปี
     """
 
     if not isinstance(returns, (list, tuple)):
-        raise TypeError("Returns must be a list or tuple.")
+        raise TypeError("ข้อมูลผลตอบแทนต้องอยู่ในรูปแบบ list หรือ tuple")
 
     if len(returns) < 2:
         raise ValueError(
-            "At least two returns are required to calculate volatility."
+            "ต้องมีข้อมูลผลตอบแทนอย่างน้อย 2 ค่า จึงจะคำนวณความผันผวนได้"
         )
 
     if not all(
@@ -30,11 +32,13 @@ def calculate_volatility(returns):
         for r in returns
     ):
         raise ValueError(
-            "Returns must be finite numbers greater than or equal to -1."
+            "ข้อมูลผลตอบแทนต้องเป็นตัวเลขที่ถูกต้อง และต้องไม่ต่ำกว่า -1"
         )
 
+    # หาค่าเฉลี่ยของผลตอบแทนรายวัน
     mean_return = sum(returns) / len(returns)
 
+    # เก็บค่าความแตกต่างระหว่างผลตอบแทนแต่ละวันกับค่าเฉลี่ย ยกกำลังสอง
     squared_deviations = []
 
     for daily_return in returns:
@@ -42,10 +46,13 @@ def calculate_volatility(returns):
         squared_deviation = deviation ** 2
         squared_deviations.append(squared_deviation)
 
+    # คำนวณความแปรปรวน โดยหารด้วยจำนวนข้อมูลลบหนึ่ง
     variance = sum(squared_deviations) / (len(returns) - 1)
 
+    # ถอดรากที่สองของความแปรปรวน เพื่อหาความผันผวนรายวัน
     daily_std_dev = math.sqrt(variance)
 
+    # แปลงความผันผวนรายวันเป็นรายปี โดยใช้ 252 วันทำการ
     annualized_volatility = daily_std_dev * math.sqrt(252)
 
     return {
@@ -64,21 +71,26 @@ def run_monte_carlo(
     seed=42
 ):
     """
-    Run Historical Bootstrap Monte Carlo simulations.
+    จำลองมูลค่าเงินลงทุนหลาย ๆ รอบ ด้วยวิธี Historical Bootstrap Monte Carlo
 
-    Args:
-        returns (list): Historical daily returns used for random sampling.
-        initial_investment (float): Starting portfolio value.
-        trading_days (int): Number of days in each simulation.
-        simulations (int): Number of simulation paths.
-        seed (int): Random seed for reproducible results.
+    หลักการ:
+        สุ่มเลือกผลตอบแทนรายวันจากข้อมูลในอดีต แล้วนำไปคำนวณมูลค่าเงินลงทุน
+        ทำซ้ำตามจำนวนวันที่กำหนด และทำซ้ำหลายรอบตามจำนวนการจำลอง
 
-    Returns:
-        list: A list containing simulated portfolio value paths.
+    รับค่า:
+        returns: ผลตอบแทนรายวันในอดีตที่ใช้เป็นข้อมูลสำหรับสุ่ม
+        initial_investment: จำนวนเงินลงทุนเริ่มต้น
+        trading_days: จำนวนวันที่ต้องการจำลองในแต่ละรอบ
+        simulations: จำนวนรอบที่ต้องการจำลอง
+        seed: ตัวเลขตั้งต้นสำหรับการสุ่ม ทำให้การทดลองซ้ำได้ผลเหมือนเดิม
+
+    ส่งกลับ:
+        list: รายการผลการจำลองทั้งหมด แต่ละรอบเก็บมูลค่าเงินลงทุนตั้งแต่วันแรก
+              ไปจนถึงวันสุดท้าย
     """
 
     if not isinstance(returns, (list, tuple)) or len(returns) == 0:
-        raise ValueError("Returns must be a non-empty list or tuple.")
+        raise ValueError("ต้องใส่ข้อมูลผลตอบแทนอย่างน้อย 1 ค่า")
 
     if not all(
         isinstance(r, (int, float))
@@ -88,7 +100,7 @@ def run_monte_carlo(
         for r in returns
     ):
         raise ValueError(
-            "Returns must be finite numbers greater than or equal to -1."
+            "ข้อมูลผลตอบแทนต้องเป็นตัวเลขที่ถูกต้อง และต้องไม่ต่ำกว่า -1"
         )
 
     if (
@@ -98,7 +110,7 @@ def run_monte_carlo(
         or initial_investment <= 0
     ):
         raise ValueError(
-            "Initial investment must be a positive finite number."
+            "เงินลงทุนเริ่มต้นต้องเป็นตัวเลขที่มากกว่าศูนย์"
         )
 
     if (
@@ -106,39 +118,46 @@ def run_monte_carlo(
         or isinstance(trading_days, bool)
         or trading_days <= 0
     ):
-        raise ValueError("Trading days must be a positive integer.")
+        raise ValueError("จำนวนวันจำลองต้องเป็นจำนวนเต็มที่มากกว่าศูนย์")
 
     if (
         not isinstance(simulations, int)
         or isinstance(simulations, bool)
         or simulations <= 0
     ):
-        raise ValueError("Simulations must be a positive integer.")
+        raise ValueError("จำนวนรอบจำลองต้องเป็นจำนวนเต็มที่มากกว่าศูนย์")
 
     if not isinstance(seed, int) or isinstance(seed, bool):
-        raise ValueError("Seed must be an integer.")
+        raise ValueError("ค่า seed ต้องเป็นจำนวนเต็ม")
 
+    # สร้างตัวสุ่ม โดยใช้ seed เพื่อให้ได้ผลการสุ่มซ้ำได้
     rng = random.Random(seed)
 
+    # ใช้เก็บผลการจำลองของทุกรอบ
     all_simulations = []
 
+    # วนทำซ้ำตามจำนวนรอบที่ผู้ใช้กำหนด
     for simulation in range(simulations):
 
+        # เริ่มต้นแต่ละรอบด้วยเงินลงทุนตั้งต้น
         portfolio_values = [initial_investment]
 
         current_value = initial_investment
 
+        # จำลองผลตอบแทนทีละวัน
         for day in range(trading_days):
 
+            # สุ่มผลตอบแทนหนึ่งวันจากข้อมูลในอดีต
             daily_return = rng.choice(returns)
 
+            # คำนวณมูลค่าเงินลงทุนใหม่หลังราคาหุ้นเปลี่ยนแปลง
             current_value = current_value * (1 + daily_return)
 
+            # บันทึกมูลค่าเงินลงทุนของวันนั้น
             portfolio_values.append(current_value)
 
+        # เมื่อจำลองครบทุกวันแล้ว เก็บผลของรอบนี้ไว้
         all_simulations.append(portfolio_values)
 
+    # ส่งผลการจำลองทั้งหมดกลับไปให้ไฟล์อื่นนำไปวิเคราะห์ความเสี่ยงต่อ
     return all_simulations
-
-
-
