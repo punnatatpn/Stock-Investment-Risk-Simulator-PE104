@@ -369,12 +369,14 @@ if __name__ == "__main__":
         "Enter stock ticker (e.g. AAPL or MC.BK): "
     ).strip().upper()
 
-    # กำหนดตำแหน่งไฟล์ CSV
-    csv_path = os.path.join(
+    # เก็บข้อมูลที่ดาวน์โหลดไว้ใน cache แยกจาก sample_data
+    cache_dir = os.path.join(
         os.path.dirname(__file__),
-        "sample_data",
-        "stock_prices.csv"
+        "data",
+        "cache"
     )
+    os.makedirs(cache_dir, exist_ok=True)
+    csv_path = os.path.join(cache_dir, "stock_prices.csv")
 
     stock_data = load_stock_data(csv_path, ticker)
 
