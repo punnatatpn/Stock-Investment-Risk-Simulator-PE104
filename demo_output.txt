@@ -1,22 +1,23 @@
-QUANT STOCK RISK SIMULATOR – DEMO OUTPUT CAPTURE
+QUANT – ระบบจำลองความเสี่ยงจากการลงทุนในหุ้น
+แม่แบบสำหรับบันทึกผลลัพธ์จากการทดลองรันโปรแกรม
 
-This file is a capture template, not a claim that the latest revision has already been executed.
+หมายเหตุ: ไฟล์นี้ยังเป็นแม่แบบ ไม่ใช่การยืนยันว่าได้ทดลองรันโปรแกรมเวอร์ชันล่าสุดและบันทึกผลลัพธ์จริงครบถ้วนแล้ว
 
-To create the required genuine demo transcript:
-1. Open Terminal in the project root.
-2. Run: python3 main.py
-3. Select option 3 (offline sample-data demo).
-4. Enter:
-   Initial investment: 10000
-   Trading days: 10
-   Number of simulations: 100
-5. Copy the complete terminal output from the menu through the saved-report message into this file.
-6. Return to the menu and enter 0; include the exit message too.
+วิธีสร้างบันทึกผลการรันจริง:
+1. เปิด Terminal ที่โฟลเดอร์หลักของโครงการ
+2. เรียกใช้คำสั่ง: python3 main.py
+3. เลือกเมนู 3 (สาธิตด้วยข้อมูลตัวอย่างแบบออฟไลน์)
+4. กรอกค่าต่อไปนี้เมื่อโปรแกรมถาม:
+   เงินลงทุนเริ่มต้น: 10000
+   จำนวนวันซื้อขายที่จำลอง: 10
+   จำนวนรอบการจำลอง: 100
+5. คัดลอกผลลัพธ์จาก Terminal ตั้งแต่เมนูหลักจนถึงข้อความแจ้งว่าบันทึกรายงานแล้ว มาแทนที่ข้อความแม่แบบในไฟล์นี้
+6. กลับไปยังเมนูหลักแล้วกรอก 0 เพื่อออกจากโปรแกรม และบันทึกข้อความแจ้งการออกจากโปรแกรมไว้ด้วย
 
-Expected behavior:
-- The program reads sample_data/stock_prices.csv.
-- It does not require an internet connection.
-- It calculates volatility, Monte Carlo outcomes, probability of loss, VaR, and MDD.
-- It saves the generated report to reports/risk_report.txt.
+ผลลัพธ์ที่ควรเกิดขึ้น:
+- โปรแกรมอ่านข้อมูลหุ้น AAPL จาก sample_data/stock_prices.csv
+- ไม่จำเป็นต้องเชื่อมต่ออินเทอร์เน็ต
+- โปรแกรมคำนวณความผันผวน ผลลัพธ์จาก Monte Carlo ความน่าจะเป็นที่จะขาดทุน VaR และ MDD
+- โปรแกรมบันทึกรายงานไว้ที่ reports/risk_report.txt
 
-Replace this instruction text with the actual terminal transcript before submission.
+ก่อนส่งโครงงาน ต้องแทนที่คำแนะนำในไฟล์นี้ด้วยข้อความที่คัดลอกจากการทดลองรันจริง ห้ามเขียนผลลัพธ์ขึ้นเอง
