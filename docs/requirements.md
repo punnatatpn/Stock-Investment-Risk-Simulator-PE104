@@ -1,40 +1,46 @@
-# PE104 Project Requirements
+# ข้อกำหนดของโครงงาน PE104
 
-## Purpose
-Build a terminal-only Python application that analyzes historical stock prices, simulates hypothetical investment outcomes, evaluates risk, and saves a readable report.
+## 1. วัตถุประสงค์
 
-## User and platform requirements
-- Run from the project root with `python main.py` (or `python3 main.py` where required).
-- Use a repeating terminal menu until option `0` is selected.
-- No graphical user interface or web application.
-- Validate user inputs and ask again when invalid.
-- Provide a local sample-data demonstration that does not require internet access.
+พัฒนาโปรแกรมภาษา Python ที่ทำงานผ่าน Terminal เท่านั้น เพื่อวิเคราะห์ราคาหุ้นย้อนหลัง จำลองผลลัพธ์ของการลงทุน ประเมินความเสี่ยง และบันทึกรายงานที่สามารถอ่านและตรวจสอบได้
 
-## Programming requirements
-- Use functions with docstrings and return values.
-- Use lists and dictionaries, including a nested structure such as a list of dictionaries.
-- Read and write CSV/text files.
-- Include exception handling for invalid input, missing files, and file/data errors.
-- Use at least six functions across the project.
-- External packages must be documented and justified.
+## 2. ข้อกำหนดด้านผู้ใช้และแพลตฟอร์ม
 
-## Functional requirements
-1. Retrieve or load historical daily closing prices.
-2. Calculate daily returns.
-3. Calculate daily and annualized volatility.
-4. Run Historical Bootstrap Monte Carlo simulations.
-5. Calculate probability of loss, Value at Risk (VaR), and Maximum Drawdown (MDD).
-6. Display and save a formatted report.
-7. Allow users to view the previous report.
+- เรียกใช้โปรแกรมจากโฟลเดอร์หลักด้วยคำสั่ง `python main.py` (หรือ `python3 main.py` ตามการตั้งค่าของเครื่อง)
+- มีเมนู Terminal ที่วนกลับมาแสดงซ้ำจนกว่าผู้ใช้จะเลือกเมนู `0` เพื่อออกจากโปรแกรม
+- ไม่พัฒนาส่วนติดต่อผู้ใช้แบบกราฟิก (GUI) หรือเว็บแอปพลิเคชัน
+- ตรวจสอบค่าที่ผู้ใช้กรอก และถามใหม่เมื่อข้อมูลไม่ถูกต้อง
+- มีโหมดสาธิตโดยใช้ข้อมูลตัวอย่างภายในเครื่อง ซึ่งไม่จำเป็นต้องเชื่อมต่ออินเทอร์เน็ต
 
-## Data and dependencies
-- Bundled examples live in `sample_data/stock_prices.csv`.
-- Live Yahoo Finance downloads are cached separately under `data/cache/`.
-- Python standard library handles CSV, math, random simulation, and file operations.
-- `yfinance` is the only direct third-party dependency.
+## 3. ข้อกำหนดด้านการเขียนโปรแกรม
 
-## Evidence required before submission
-- Execute and record at least five test cases, including invalid inputs and missing/corrupt data.
-- Save a genuine terminal transcript in `demo_output.txt`.
-- Keep an honest AI log with actual results and corrections.
-- Maintain six distinguishable source versions as features are developed. Do not invent historical versions after the fact.
+- แบ่งการทำงานเป็นฟังก์ชัน โดยแต่ละฟังก์ชันมี Docstring อธิบายหน้าที่และมีการคืนค่าผ่าน `return` ตามความเหมาะสม
+- ใช้ List และ Dictionary รวมถึงโครงสร้างข้อมูลแบบซ้อน เช่น List ที่ประกอบด้วย Dictionary หลายรายการ
+- อ่านและเขียนไฟล์ CSV หรือไฟล์ข้อความ
+- จัดการข้อผิดพลาดที่อาจเกิดขึ้น เช่น ข้อมูลที่กรอกไม่ถูกต้อง ไฟล์หาย หรือข้อมูลในไฟล์มีปัญหา
+- มีฟังก์ชันอย่างน้อย 6 ฟังก์ชันในภาพรวมของโครงการ
+- อธิบายเหตุผลและหน้าที่ของไลบรารีภายนอกที่นำมาใช้
+
+## 4. ข้อกำหนดด้านความสามารถของระบบ
+
+1. ดึงหรืออ่านข้อมูลราคาปิดรายวันย้อนหลังของหุ้น
+2. คำนวณผลตอบแทนรายวัน
+3. คำนวณความผันผวนรายวันและความผันผวนต่อปี
+4. จำลอง Historical Bootstrap Monte Carlo
+5. คำนวณความน่าจะเป็นที่จะขาดทุน (Probability of Loss), Value at Risk (VaR) และ Maximum Drawdown (MDD)
+6. แสดงรายงานที่จัดรูปแบบให้อ่านง่ายและบันทึกลงไฟล์
+7. เปิดดูรายงานที่บันทึกไว้ก่อนหน้าได้
+
+## 5. ข้อมูลและไลบรารีที่ใช้
+
+- ข้อมูลตัวอย่างที่รวมมากับโครงการอยู่ที่ `sample_data/stock_prices.csv`
+- ข้อมูลจริงที่ดาวน์โหลดจาก Yahoo Finance จะถูกเก็บแยกไว้ที่ `data/cache/`
+- ไลบรารีมาตรฐานของ Python ใช้สำหรับจัดการ CSV คณิตศาสตร์ การสุ่มจำลอง และการจัดการไฟล์
+- ไลบรารีภายนอกที่โครงการเรียกใช้โดยตรงคือ `yfinance`
+
+## 6. หลักฐานที่ต้องจัดเตรียมก่อนส่งงาน
+
+- ทดลองและบันทึกผลการทดสอบอย่างน้อย 5 กรณี โดยมีทั้งกรณีกรอกข้อมูลไม่ถูกต้องและกรณีไฟล์หายหรือข้อมูลเสียหาย
+- บันทึกผลการทำงานจาก Terminal จริงไว้ใน `demo_output.txt`
+- จัดทำบันทึกการใช้ AI อย่างตรงไปตรงมา โดยระบุผลที่เกิดขึ้นจริงและการแก้ไข
+- เก็บประวัติเวอร์ชันของซอร์สโค้ดที่แยกแยะได้อย่างน้อย 6 ช่วงการพัฒนา ห้ามสร้างประวัติย้อนหลังที่ไม่เคยเกิดขึ้นจริง
