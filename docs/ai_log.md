@@ -1,19 +1,20 @@
-# AI Assistance Log
+# บันทึกการใช้ปัญญาประดิษฐ์ (AI Assistance Log)
 
-This log records assistance used during development. The entries distinguish prior student-reported tests from new changes that still require local execution. Update the result field after each real test. Do not invent terminal output.
+เอกสารนี้บันทึกการใช้ AI ระหว่างพัฒนาโครงงาน โดยแยกผลการทดสอบที่ผู้เรียนเคยรายงานไว้ก่อนหน้าออกจากการแก้ไขใหม่ที่ยังต้องทดลองบนเครื่องจริง ควรอัปเดตผลทุกครั้งหลังจากทดสอบจริง และห้ามสร้างผลลัพธ์จาก Terminal ขึ้นเอง
 
-| # | Date | Question / task | AI suggestion or change | Actual result / evidence | Assessment and next action |
+| ลำดับ | วันที่ | คำถาม / งานที่ขอความช่วยเหลือ | คำแนะนำหรือการแก้ไขจาก AI | ผลการทดลองจริง / หลักฐาน | การประเมินและขั้นตอนต่อไป |
 |---|---|---|---|---|---|
-| 1 | 2026-11-16 | Help build the Monte Carlo module | Explained historical bootstrap and created validation for returns, investment, days, simulations, and seed | Student previously reported `py_compile` and module execution passed | Reported PASS at that earlier revision; rerun after integration changes |
-| 2 | 2026-11-16 | Help build risk assessment and report | Added probability of loss, percentile VaR, MDD, and TXT report generation | Student previously reported `python3 -m py_compile risk_report.py` and direct module run passed | Reported PASS at that earlier revision; rerun after integration changes |
-| 3 | 2026-11-16 | Integrate the three members' modules | Connected data, simulation, and risk-report functions through `main.py` | Student previously reported the end-to-end AAPL workflow passed | Reported PASS at that earlier revision; current revision requires a new full run |
-| 4 | 2026-11-17 | Check compliance with PE104 menu requirement | AI review found the existing menu used option 3 to exit, conflicting with the supplied rubric requiring option 0 | Confirmed directly in the repository's previous `main.py`; corrected in commit de15f69 | **AI design mistake / rubric mismatch identified during review.** Menu now exits on 0; student must run T01 and T02 |
-| 5 | 2026-11-17 | Clarify whether sample_data should be example data | AI review found live downloads were being written to `sample_data/stock_prices.csv`, mixing cache and bundled example data | Confirmed in the previous `main.py` and `data_analysis.py`; workflow changed to cache live data under `data/cache/` and use sample CSV only for offline demo | **AI design mistake identified during review.** Run T04 and confirm sample CSV remains unchanged |
-| 6 | 2026-11-17 | Repair empty project documentation | Wrote README with run instructions, dependencies, methods, limitations, and module ownership | README update committed as 19a3fc8; not yet reviewed by student | Awaiting student review and local run |
-| 7 | 2026-11-17 | Document external packages | Added `yfinance` to requirements and explained standard-library modules | requirements update committed as 7af7dd1 | Installation test still required |
-| 8 | 2026-11-17 | Add reproducible test evidence | Created a test plan with menu, invalid input, offline demo, report retrieval, missing report, and live-data cases | Test cases documented; none of the new revision's cases have been run locally yet | Run tests T01–T08 and replace pending results with actual observations |
+| 1 | 2026-11-16 | ขอความช่วยเหลือในการสร้างโมดูล Monte Carlo | อธิบายหลักการ Historical Bootstrap และสร้างการตรวจสอบข้อมูลผลตอบแทน เงินลงทุน จำนวนวัน จำนวนรอบจำลอง และ Seed | ผู้เรียนเคยรายงานว่าการตรวจไวยากรณ์ด้วย `py_compile` และการรันโมดูลผ่านในเวอร์ชันก่อนหน้า | ถือว่าผ่านตามผลที่ผู้เรียนรายงานในเวอร์ชันก่อนหน้า ต้องทดสอบซ้ำหลังรวมโมดูล |
+| 2 | 2026-11-16 | ขอความช่วยเหลือในการประเมินความเสี่ยงและสร้างรายงาน | เพิ่มการคำนวณ Probability of Loss, VaR แบบเปอร์เซ็นไทล์, MDD และการสร้างรายงาน TXT | ผู้เรียนเคยรายงานว่าคำสั่ง `python3 -m py_compile risk_report.py` และการรันโมดูลโดยตรงผ่าน | ถือว่าผ่านตามผลที่ผู้เรียนรายงานในเวอร์ชันก่อนหน้า ต้องทดสอบซ้ำหลังรวมระบบ |
+| 3 | 2026-11-16 | รวมโมดูลของสมาชิกทั้งสามคนเข้าด้วยกัน | เชื่อมการทำงานของข้อมูล การจำลอง และรายงานความเสี่ยงผ่าน `main.py` | ผู้เรียนเคยรายงานว่าเวิร์กโฟลว์ AAPL แบบครบกระบวนการทำงานผ่านในเวอร์ชันก่อนหน้า | ผลดังกล่าวเป็นผลของเวอร์ชันก่อนหน้า เวอร์ชันปัจจุบันต้องทดสอบใหม่ |
+| 4 | 2026-11-17 | ตรวจสอบว่าเมนูตรงตามข้อกำหนด PE104 หรือไม่ | AI ตรวจพบว่าเมนูเดิมใช้ตัวเลือก 3 เพื่อออกจากโปรแกรม ซึ่งไม่ตรงกับข้อกำหนดที่ผู้เรียนให้มาว่าต้องใช้ตัวเลือก 0 | ตรวจพบจากการตรวจไฟล์ `main.py` เวอร์ชันก่อนหน้า และแก้ไขใน Commit `de15f69` | **พบข้อผิดพลาดด้านการออกแบบของ AI / ความไม่ตรงกันกับข้อกำหนด** ปรับให้ใช้ 0 เพื่อออกจากโปรแกรมแล้ว ต้องทดสอบ T01 และ T02 |
+| 5 | 2026-11-17 | ตรวจสอบการจัดเก็บข้อมูลตัวอย่างและข้อมูลที่ดาวน์โหลด | AI ตรวจพบว่าข้อมูลที่ดาวน์โหลดจริงถูกเขียนทับลงใน `sample_data/stock_prices.csv` ทำให้ข้อมูลตัวอย่างปะปนกับข้อมูลจริง | ตรวจพบจาก `main.py` และ `data_analysis.py` เวอร์ชันก่อนหน้า แล้วปรับให้เก็บข้อมูลจริงใน `data/cache/` และใช้ CSV ตัวอย่างสำหรับโหมดออฟไลน์เท่านั้น | **พบข้อผิดพลาดด้านการออกแบบของ AI** ต้องทดสอบ T04 และตรวจว่าไฟล์ตัวอย่างไม่เปลี่ยนแปลง |
+| 6 | 2026-11-17 | ขอให้จัดทำเอกสารอธิบายโครงงาน | สร้าง README อธิบายวิธีรัน ไลบรารี วิธีคำนวณ ข้อจำกัด และหน้าที่ของแต่ละโมดูล | บันทึกการแก้ไข README ใน Commit `19a3fc8`; รอการตรวจทานจากผู้เรียน | ให้ผู้เรียนตรวจความถูกต้องและทดลองทำตามขั้นตอน |
+| 7 | 2026-11-17 | ขอให้ระบุไลบรารีภายนอกที่ใช้ | เพิ่ม `yfinance` ใน requirements และอธิบายส่วนที่ใช้ไลบรารีมาตรฐานของ Python | บันทึกการแก้ไข requirements ใน Commit `7af7dd1` | ยังต้องทดสอบการติดตั้งไลบรารี |
+| 8 | 2026-11-17 | ขอให้จัดทำหลักฐานการทดสอบที่ตรวจสอบย้อนหลังได้ | สร้างแผนทดสอบเมนู การกรอกข้อมูลผิด โหมดออฟไลน์ การเปิดรายงาน กรณีไม่มีไฟล์ และการดึงข้อมูลจริง | จัดทำกรณีทดสอบไว้แล้ว แต่ยังต้องบันทึกผลการทดสอบของเวอร์ชันปัจจุบันจากเครื่องจริง | ทดลอง T01–T08 และเปลี่ยนสถานะตามผลจริง |
 
-## Notes
-- “Student previously reported PASS” refers to the earlier revision, not the current repository state.
-- The two AI design mistakes above are real mismatches found by inspecting the prior code against the supplied requirements. Keep these entries only if they accurately reflect the development discussion.
-- AI output must be tested. The student remains responsible for understanding and explaining every line.
+## หมายเหตุ
+
+- ข้อความ “ผู้เรียนเคยรายงานว่าผ่าน” หมายถึงผลที่ผู้เรียนแจ้งไว้ในเวอร์ชันก่อนหน้า ไม่ได้หมายความว่าโค้ดเวอร์ชันล่าสุดผ่านการทดสอบทั้งหมดแล้ว
+- ข้อผิดพลาดของ AI สองกรณีข้างต้นเป็นความไม่ตรงกันที่พบจากการตรวจโค้ดก่อนหน้าเทียบกับข้อกำหนดที่ได้รับ ควรเก็บรายการเหล่านี้ไว้ต่อเมื่อสอดคล้องกับเหตุการณ์ที่เกิดขึ้นจริงระหว่างพัฒนา
+- ผลลัพธ์จาก AI ต้องผ่านการตรวจสอบ ผู้เรียนยังต้องเข้าใจและอธิบายโค้ดทุกส่วนได้ด้วยตนเอง
