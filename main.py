@@ -1,4 +1,4 @@
-"""Main menu and workflow for QUANT Stock Investment Risk Simulator."""
+"""ไฟล์หลักของโปรแกรม QUANT สำหรับเรียกใช้งานทุกส่วนผ่านเมนูหลัก"""
 
 import csv
 import math
@@ -10,45 +10,45 @@ from risk_report import calculate_risk, generate_report
 
 
 def get_ticker():
-    """Ask for a ticker and return it after basic validation."""
+    """รับรหัสหุ้นจากผู้ใช้และตรวจสอบข้อมูลก่อนนำไปใช้"""
     while True:
-        ticker = input("Enter stock ticker (e.g. AAPL or PTT.BK): ").strip().upper()
+        ticker = input("กรอกรหัสหุ้น (เช่น AAPL หรือ PTT.BK): ").strip().upper()
         if not ticker:
-            print("Ticker cannot be empty.")
+            print("กรุณากรอกรหัสหุ้น")
         elif not any(char.isalpha() for char in ticker):
-            print("Ticker must contain letters.")
+            print("รหัสหุ้นต้องมีตัวอักษรอย่างน้อยหนึ่งตัว")
         elif not all(char.isalnum() or char == "." for char in ticker):
-            print("Only letters, numbers and dots are allowed.")
+            print("ใช้ได้เฉพาะตัวอักษร ตัวเลข และจุดเท่านั้น")
         else:
             return ticker
 
 
 def get_positive_float(prompt):
-    """Return a positive finite float entered by the user."""
+    """รับตัวเลขที่มากกว่าศูนย์ เช่น จำนวนเงินลงทุน"""
     while True:
         try:
             value = float(input(prompt).strip())
             if math.isfinite(value) and value > 0:
                 return value
-            print("Please enter a positive finite number.")
+            print("กรุณากรอกตัวเลขที่มากกว่าศูนย์")
         except ValueError:
-            print("Please enter a valid number.")
+            print("ข้อมูลไม่ใช่ตัวเลข กรุณาลองใหม่")
 
 
 def get_positive_integer(prompt):
-    """Return a positive integer entered by the user."""
+    """รับจำนวนเต็มที่มากกว่าศูนย์ เช่น จำนวนวันหรือจำนวนรอบจำลอง"""
     while True:
         try:
             value = int(input(prompt).strip())
             if value > 0:
                 return value
-            print("Please enter an integer greater than zero.")
+            print("กรุณากรอกจำนวนเต็มที่มากกว่าศูนย์")
         except ValueError:
-            print("Please enter a whole number.")
+            print("กรุณากรอกเป็นจำนวนเต็ม เช่น 10 หรือ 100")
 
 
 def load_sample_data(sample_path, ticker="AAPL"):
-    """Read and validate a ticker's historical prices from sample CSV data."""
+    """อ่านราคาหุ้นจากไฟล์ CSV ตัวอย่าง และเลือกเฉพาะหุ้นที่ต้องการ"""
     records = []
     seen_dates = set()
     try:
@@ -56,7 +56,7 @@ def load_sample_data(sample_path, ticker="AAPL"):
             reader = csv.DictReader(file)
             required = {"date", "ticker", "close"}
             if not reader.fieldnames or not required.issubset(reader.fieldnames):
-                raise ValueError("Sample CSV must contain date, ticker, close columns.")
+                raise ValueError("ไฟล์ CSV ต้องมีคอลัมน์ date, ticker และ close")
 
             for row_number, row in enumerate(reader, start=2):
                 if (row.get("ticker") or "").strip().upper() != ticker.upper():
@@ -67,17 +67,17 @@ def load_sample_data(sample_path, ticker="AAPL"):
                     if not math.isfinite(close) or close <= 0:
                         raise ValueError
                 except (ValueError, TypeError, AttributeError):
-                    print(f"Skipping invalid sample CSV row {row_number}.")
+                    print(f"ข้ามแถวที่ {row_number} เพราะข้อมูลไม่ถูกต้อง")
                     continue
                 if date in seen_dates:
                     continue
                 seen_dates.add(date)
                 records.append({"date": date, "ticker": ticker.upper(), "close": close})
     except FileNotFoundError:
-        print("Sample data file was not found:", sample_path)
+        print("ไม่พบไฟล์ข้อมูลตัวอย่าง:", sample_path)
         return []
     except (OSError, csv.Error, ValueError) as error:
-        print("Could not read sample data:", error)
+        print("อ่านไฟล์ข้อมูลตัวอย่างไม่ได้:", error)
         return []
 
     records.sort(key=lambda item: item["date"])
@@ -85,45 +85,45 @@ def load_sample_data(sample_path, ticker="AAPL"):
 
 
 def run_analysis(ticker_override=None, use_sample=False):
-    """Run data loading, return analysis, simulation, risk assessment and report."""
+    """เรียกขั้นตอนวิเคราะห์ข้อมูล จำลองผลลัพธ์ ประเมินความเสี่ยง และสร้างรายงาน"""
     ticker = ticker_override or get_ticker()
-    initial_investment = get_positive_float("Initial investment: ")
-    trading_days = get_positive_integer("Trading days: ")
-    simulations = get_positive_integer("Number of simulations: ")
+    initial_investment = get_positive_float("จำนวนเงินลงทุนเริ่มต้น: ")
+    trading_days = get_positive_integer("จำนวนวันที่ต้องการจำลอง: ")
+    simulations = get_positive_integer("จำนวนรอบการจำลอง: ")
     confidence_level = 0.95
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
     if use_sample:
         csv_path = os.path.join(base_dir, "sample_data", "stock_prices.csv")
-        print("\nDEMO MODE: using the bundled sample CSV; no internet is required.")
+        print("\nโหมดทดลอง: ใช้ข้อมูลตัวอย่างที่มีอยู่ในเครื่อง ไม่ต้องเชื่อมต่ออินเทอร์เน็ต")
         stock_data = load_sample_data(csv_path, ticker)
     else:
         cache_dir = os.path.join(base_dir, "data", "cache")
         os.makedirs(cache_dir, exist_ok=True)
         csv_path = os.path.join(cache_dir, "stock_prices.csv")
-        print("\n[1/4] Loading stock data from Yahoo Finance...")
+        print("\n[1/4] กำลังโหลดข้อมูลราคาหุ้นจาก Yahoo Finance...")
         stock_data = load_stock_data(csv_path, ticker)
 
     if not stock_data:
-        print("No stock data available. Check the ticker or sample dataset.")
+        print("ไม่มีข้อมูลหุ้นให้วิเคราะห์ กรุณาตรวจสอบรหัสหุ้นหรือไฟล์ข้อมูลตัวอย่าง")
         return None
 
     prices = [record["close"] for record in stock_data]
     daily_returns = calculate_daily_returns(prices)
     if len(daily_returns) < 2:
-        print("At least three valid price records are required.")
+        print("ต้องมีข้อมูลราคาหุ้นที่ถูกต้องอย่างน้อย 3 รายการ")
         return None
 
-    print("Stock data loaded:", len(stock_data), "price records.")
-    print("\n[2/4] Calculating volatility...")
+    print("โหลดข้อมูลราคาหุ้นแล้ว:", len(stock_data), "รายการ")
+    print("\n[2/4] กำลังคำนวณความผันผวน...")
     volatility_results = calculate_volatility(daily_returns)
-    print("Annualized Volatility:", f"{volatility_results['annualized_volatility']:.2%}")
+    print("ความผันผวนต่อปี:", f"{volatility_results['annualized_volatility']:.2%}")
 
-    print("\n[3/4] Running Historical Bootstrap Monte Carlo...")
+    print("\n[3/4] กำลังจำลองผลลัพธ์ด้วยวิธี Historical Bootstrap Monte Carlo...")
     simulation_paths = run_monte_carlo(
         daily_returns, initial_investment, trading_days, simulations
     )
-    print("Simulation completed:", len(simulation_paths), "paths")
+    print("จำลองเสร็จแล้ว:", len(simulation_paths), "รอบ")
 
     risk_results = calculate_risk(
         simulation_paths, initial_investment, confidence_level
@@ -143,73 +143,73 @@ def run_analysis(ticker_override=None, use_sample=False):
     report_path = os.path.join(reports_dir, "risk_report.txt")
     report = generate_report(analysis, report_path)
 
-    print("\n[4/4] Report generated successfully!")
+    print("\n[4/4] สร้างรายงานเรียบร้อยแล้ว")
     print("\n" + report)
-    print("\nSaved to:", report_path)
+    print("\nบันทึกรายงานไว้ที่:", report_path)
     return analysis
 
 
 def view_previous_report():
-    """Read, display and return the previously saved report, if available."""
+    """เปิดและแสดงรายงานความเสี่ยงที่เคยบันทึกไว้"""
     base_dir = os.path.dirname(os.path.abspath(__file__))
     report_path = os.path.join(base_dir, "reports", "risk_report.txt")
     if not os.path.exists(report_path):
-        print("\nNo previous report found. Run an analysis first.")
+        print("\nยังไม่มีรายงาน กรุณาวิเคราะห์หุ้นก่อน")
         return None
     try:
         with open(report_path, "r", encoding="utf-8") as file:
             report = file.read()
         if not report.strip():
-            print("\nThe previous report is empty.")
+            print("\nไฟล์รายงานยังไม่มีเนื้อหา")
             return None
         print("\n" + "=" * 60)
-        print("PREVIOUS RISK REPORT")
+        print("รายงานความเสี่ยงครั้งก่อน")
         print("=" * 60)
         print(report)
         return report
     except OSError as error:
-        print("\nUnable to read the previous report:", error)
+        print("\nเปิดรายงานไม่ได้:", error)
         return None
 
 
 def main():
-    """Display the repeating terminal menu until the user selects 0."""
+    """แสดงเมนูซ้ำไปเรื่อย ๆ จนกว่าผู้ใช้จะเลือก 0 เพื่อออกจากโปรแกรม"""
     while True:
         print("\n" + "=" * 50)
-        print("       QUANT STOCK RISK SIMULATOR")
+        print("       โปรแกรมจำลองความเสี่ยงการลงทุนในหุ้น QUANT")
         print("=" * 50)
-        print("\nMAIN MENU")
-        print("[1] Run Stock Risk Analysis (Yahoo Finance)")
-        print("[2] View Previous Report")
-        print("[3] Run Demo Using Sample Data (offline)")
-        print("[0] Exit")
+        print("\nเมนูหลัก")
+        print("[1] วิเคราะห์ความเสี่ยงของหุ้น (ดึงข้อมูลจาก Yahoo Finance)")
+        print("[2] ดูรายงานครั้งก่อน")
+        print("[3] ทดลองใช้งานด้วยข้อมูลตัวอย่าง (ไม่ต้องใช้อินเทอร์เน็ต)")
+        print("[0] ออกจากโปรแกรม")
 
-        choice = input("\nSelect an option: ").strip()
+        choice = input("\nเลือกเมนูที่ต้องการ: ").strip()
         if choice == "1":
             try:
                 run_analysis()
             except (ValueError, TypeError, OSError, KeyError) as error:
-                print("\nAnalysis could not be completed:", error)
+                print("\nไม่สามารถวิเคราะห์ข้อมูลได้:", error)
             except Exception as error:
-                print("\nUnexpected error:", error)
-            input("\nPress Enter to return to the main menu...")
+                print("\nเกิดข้อผิดพลาดที่ไม่คาดคิด:", error)
+            input("\nกด Enter เพื่อกลับไปยังเมนูหลัก...")
         elif choice == "2":
             view_previous_report()
-            input("\nPress Enter to return to the main menu...")
+            input("\nกด Enter เพื่อกลับไปยังเมนูหลัก...")
         elif choice == "3":
             try:
                 run_analysis("AAPL", use_sample=True)
             except (ValueError, TypeError, OSError, KeyError) as error:
-                print("\nDemo could not be completed:", error)
+                print("\nไม่สามารถทดลองวิเคราะห์ได้:", error)
             except Exception as error:
-                print("\nUnexpected error:", error)
-            input("\nPress Enter to return to the main menu...")
+                print("\nเกิดข้อผิดพลาดที่ไม่คาดคิด:", error)
+            input("\nกด Enter เพื่อกลับไปยังเมนูหลัก...")
         elif choice == "0":
-            print("\nThank you for using QUANT Stock Risk Simulator.")
-            print("Goodbye!")
+            print("\nขอบคุณที่ใช้โปรแกรม QUANT Stock Risk Simulator")
+            print("ปิดโปรแกรมเรียบร้อยแล้ว")
             return 0
         else:
-            print("\nInvalid option. Please select 0, 1, 2 or 3.")
+            print("\nไม่มีเมนูนี้ กรุณาเลือก 0, 1, 2 หรือ 3")
 
 
 if __name__ == "__main__":
