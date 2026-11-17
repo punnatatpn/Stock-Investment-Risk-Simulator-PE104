@@ -1,4 +1,10 @@
-# Runtime dependencies
-# Python standard library modules (csv, datetime, logging, math, os, tempfile,
-# random, statistics) are included with Python and do not need installation.
+# ไลบรารีที่จำเป็นสำหรับการทำงานของโปรแกรม
+
+# โมดูลมาตรฐานของ Python ได้แก่ csv, datetime, logging, math, os,
+# tempfile, random และ statistics
+# โมดูลเหล่านี้ติดตั้งมาพร้อมกับ Python อยู่แล้ว จึงไม่จำเป็นต้องติดตั้งเพิ่มเติม
+
+# ไลบรารีภายนอก
 yfinance>=0.2.40
+datetime>=5.1.0
+
