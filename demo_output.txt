@@ -1,0 +1,22 @@
+QUANT STOCK RISK SIMULATOR – DEMO OUTPUT CAPTURE
+
+This file is a capture template, not a claim that the latest revision has already been executed.
+
+To create the required genuine demo transcript:
+1. Open Terminal in the project root.
+2. Run: python3 main.py
+3. Select option 3 (offline sample-data demo).
+4. Enter:
+   Initial investment: 10000
+   Trading days: 10
+   Number of simulations: 100
+5. Copy the complete terminal output from the menu through the saved-report message into this file.
+6. Return to the menu and enter 0; include the exit message too.
+
+Expected behavior:
+- The program reads sample_data/stock_prices.csv.
+- It does not require an internet connection.
+- It calculates volatility, Monte Carlo outcomes, probability of loss, VaR, and MDD.
+- It saves the generated report to reports/risk_report.txt.
+
+Replace this instruction text with the actual terminal transcript before submission.
