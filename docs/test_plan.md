@@ -1,21 +1,25 @@
-# Test Plan and Results
+# แผนการทดสอบและบันทึกผล
 
-**Important:** The code changes in this repository have been committed, but the updated program has not yet been executed on the student's Mac. Do not mark any test PASS until it is run locally and the observed result is entered below.
+**หมายเหตุ:** มีการบันทึกการแก้ไขโค้ดไว้ใน Repository แล้ว แต่สถานะการทดสอบแต่ละกรณีด้านล่างต้องอ้างอิงจากการทดลองบนเครื่องของผู้ใช้จริงเท่านั้น ห้ามเปลี่ยนเป็น PASS หากยังไม่ได้ทดลองและสังเกตผลลัพธ์จริง
 
-| ID | Test | Input / setup | Expected result | Actual result | Status |
+| รหัส | รายการทดสอบ | ข้อมูลนำเข้า / วิธีเตรียมการ | ผลลัพธ์ที่คาดหวัง | ผลลัพธ์ที่เกิดขึ้นจริง | สถานะ |
 |---|---|---|---|---|---|
-| T01 | Exit menu | Start program, enter `0` | Goodbye message; program ends | Pending local run | NOT RUN |
-| T02 | Invalid menu choice | Enter `9`, then `0` | Invalid-option message; menu repeats | Pending local run | NOT RUN |
-| T03 | Invalid investment | Choose demo; enter `abc`, then a positive number | Error message, then re-prompt | Pending local run | NOT RUN |
-| T04 | Offline sample analysis | Choose `3`; enter investment `10000`, days `10`, simulations `100` | Loads AAPL sample data without network; prints volatility and risk report; saves report | Pending local run | NOT RUN |
-| T05 | Previous report | Run T04, return to menu, choose `2` | Previously saved report is displayed | Pending local run | NOT RUN |
-| T06 | Missing report | Temporarily rename or remove `reports/risk_report.txt`; choose `2` | Friendly message; program continues | Pending local run | NOT RUN |
-| T07 | Live ticker with network | Choose `1`; enter a valid ticker and positive values | Downloads or uses cache and generates report | Pending local run | NOT RUN |
-| T08 | Invalid ticker / no network | Disable network and request an uncached ticker | Clear no-data message; program does not crash | Pending local run | NOT RUN |
+| T01 | ออกจากเมนู | เริ่มโปรแกรมแล้วกรอก `0` | แสดงข้อความลาและจบการทำงาน | รอการบันทึกผลจากการรันจริง | NOT RUN |
+| T02 | กรอกตัวเลือกเมนูไม่ถูกต้อง | กรอก `9` แล้วกรอก `0` | แจ้งว่าเลือกไม่ถูกต้องและแสดงเมนูอีกครั้ง | รอการบันทึกผลจากการรันจริง | NOT RUN |
+| T03 | กรอกเงินลงทุนไม่ถูกต้อง | เลือกโหมดสาธิต กรอก `abc` แล้วกรอกตัวเลขบวก | แจ้งข้อผิดพลาดและถามให้กรอกใหม่ | รอการบันทึกผลจากการรันจริง | NOT RUN |
+| T04 | วิเคราะห์ข้อมูลตัวอย่างแบบออฟไลน์ | เลือก `3`; กรอกเงินลงทุน `10000` จำนวนวัน `10` จำนวนรอบจำลอง `100` | อ่านข้อมูล AAPL โดยไม่ใช้อินเทอร์เน็ต แสดงผลความผันผวนและรายงานความเสี่ยง พร้อมบันทึกรายงาน | รอระบุผลลัพธ์และหลักฐานจากการรันจริง | NOT RUN |
+| T05 | เปิดดูรายงานก่อนหน้า | ทำ T04 ให้เสร็จ กลับสู่เมนู แล้วเลือก `2` | แสดงรายงานที่บันทึกไว้ก่อนหน้า | รอการบันทึกผลจากการรันจริง | NOT RUN |
+| T06 | กรณีไม่มีไฟล์รายงาน | เปลี่ยนชื่อหรือย้าย `reports/risk_report.txt` ชั่วคราว แล้วเลือก `2` | แสดงข้อความแจ้งเตือนที่เข้าใจง่าย และโปรแกรมทำงานต่อได้ | รอการบันทึกผลจากการรันจริง | NOT RUN |
+| T07 | ดึงข้อมูลหุ้นจริงเมื่อมีอินเทอร์เน็ต | เลือก `1`; กรอก Ticker ที่ถูกต้องและค่าตัวเลขที่เป็นบวก | ดาวน์โหลดข้อมูลหรือใช้ข้อมูลใน Cache แล้วสร้างรายงานได้ | รอการบันทึกผลจากการรันจริง | NOT RUN |
+| T08 | Ticker ไม่ถูกต้องหรือไม่มีอินเทอร์เน็ต | ปิดอินเทอร์เน็ตแล้วขอ Ticker ที่ยังไม่มีข้อมูลใน Cache | แจ้งว่าไม่มีข้อมูลอย่างชัดเจน และโปรแกรมไม่หยุดทำงานผิดพลาด | รอการบันทึกผลจากการรันจริง | NOT RUN |
 
-## How to record results
-1. Run `python3 main.py` from the project root.
-2. Execute each case exactly as written.
-3. Replace “Pending local run” with the observed output, including any error.
-4. Change status to PASS or FAIL only after observing the result.
-5. If a test fails, record the bug, fix, and retest result. Do not claim a test passed because code inspection suggests it should pass.
+## วิธีบันทึกผลการทดสอบ
+
+1. เปิด Terminal ที่โฟลเดอร์หลักของโครงการ
+2. เรียกใช้คำสั่ง `python3 main.py`
+3. ทดลองแต่ละกรณีตามขั้นตอนในตาราง
+4. แทนที่ข้อความ “รอการบันทึกผลจากการรันจริง” ด้วยผลที่สังเกตได้จริง รวมถึงข้อความผิดพลาดถ้ามี
+5. เปลี่ยนสถานะเป็น PASS หรือ FAIL หลังจากทดลองแล้วเท่านั้น
+6. หากทดสอบไม่ผ่าน ให้บันทึกข้อผิดพลาด วิธีแก้ไข และผลการทดสอบซ้ำ
+
+**ข้อควรระวัง:** การตรวจดูโค้ดแล้วคาดว่าน่าจะทำงานได้ ไม่ถือเป็นหลักฐานว่าการทดสอบผ่าน
