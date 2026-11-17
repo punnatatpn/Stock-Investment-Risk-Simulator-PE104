@@ -1,236 +1,435 @@
 # QUANT - ระบบจำลองการลงทุนในหุ้น
 # MODULE 3: การประเมินความเสี่ยงและรายงานการลงทุน
+#
 # หน้าที่หลัก:
-# 1. คำนวณความเสี่ยงจากผลการจำลอง
-# 2. เอาผลที่ได้มาทำเป็นรายงาน TXT
-import statistics  # เอาไว้หาค่าเฉลี่ยและคำนวณทางสถิติ
-import math  # เอาไว้ใช้คำนวณพวกปัดเศษ
-import os  # เอาไว้จัดการไฟล์กับโฟลเดอร์
-from datetime import datetime  # เอาไว้ดึงวันและเวลาปัจจุบัน
+# 1. นำข้อมูลจากการจำลองมาคำนวณความเสี่ยง
+# 2. คำนวณโอกาสขาดทุน, VaR และ Maximum Drawdown
+# 3. สร้างรายงานผลการลงทุนและบันทึกเป็นไฟล์ TXT
+
+import statistics  # ใช้คำนวณค่าเฉลี่ย
+import math        # ใช้คำนวณทางคณิตศาสตร์
+import os          # ใช้จัดการไฟล์และโฟลเดอร์
+from datetime import datetime  # ใช้ดึงวันที่และเวลาปัจจุบัน
+
 
 # ฟังก์ชันที่ 1: หาค่าการลดลงสูงสุดของพอร์ต
-def calculate_maximum_drawdown(path):  # รับข้อมูลพอร์ตจากการจำลองมา 1 รอบ
-    running_peak = path[0]  # เอาค่าแรกมาเป็นจุดสูงสุดเริ่มต้น
-    maximum_drawdown = 0.0  # ตั้งค่าเริ่มต้นไว้ที่ 0 ก่อน
-    for current_value in path:  # วนดูมูลค่าพอร์ตไปทีละค่า
-        if current_value > running_peak:  # ถ้าค่าตอนนี้สูงกว่าจุดสูงสุดเดิม
-            running_peak = current_value  # ก็เปลี่ยนเป็นจุดสูงสุดใหม่
-        if running_peak > 0:  # เช็คว่าจุดสูงสุดมากกว่า 0 ไหม
-            drawdown = 1 - (current_value / running_peak)  # หาว่าพอร์ตลดลงไปเท่าไหร่
+def calculate_maximum_drawdown(path):
+    """
+    คำนวณว่ามูลค่าพอร์ตเคยลดลงจากจุดสูงสุดมากที่สุดกี่เปอร์เซ็นต์
+
+    Args:
+        path (list): รายการมูลค่าพอร์ตในแต่ละวัน
+
+    Returns:
+        float: ค่าการลดลงสูงสุดในรูปแบบทศนิยม
+    """
+
+    # ตรวจว่ามีข้อมูลส่งเข้ามาหรือไม่
+    if not isinstance(path, (list, tuple)) or len(path) == 0:
+        raise ValueError("เส้นทางการจำลองต้องมีข้อมูล")
+
+    # ตรวจว่าข้อมูลทุกตัวเป็นตัวเลขที่ถูกต้องหรือไม่
+    if not all(
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and math.isfinite(value)
+        and value >= 0
+        for value in path
+    ):
+        raise ValueError("มูลค่าพอร์ตต้องเป็นตัวเลขที่ถูกต้องและไม่ติดลบ")
+
+    # กำหนดให้ค่าแรกเป็นจุดสูงสุดเริ่มต้น
+    running_peak = path[0]
+
+    # ตั้งค่าการลดลงสูงสุดเริ่มต้นเป็น 0
+    maximum_drawdown = 0.0
+
+    # ตรวจสอบมูลค่าพอร์ตทีละวัน
+    for current_value in path:
+
+        # ถ้ามูลค่าปัจจุบันสูงกว่าจุดสูงสุดเดิม
+        # ให้เปลี่ยนเป็นจุดสูงสุดใหม่
+        if current_value > running_peak:
+            running_peak = current_value
+
+        # คำนวณว่าพอร์ตลดลงจากจุดสูงสุดไปเท่าไร
+        if running_peak > 0:
+            drawdown = 1 - (current_value / running_peak)
         else:
-            drawdown = 0.0  # ถ้าค่าเป็น 0 ก็ให้การลดลงเป็น 0
-        if drawdown > maximum_drawdown:  # ถ้าค่าที่ได้มากกว่าค่าสูงสุดเดิม
-            maximum_drawdown = drawdown  # ก็เก็บค่าใหม่เอาไว้
-    return maximum_drawdown  # ส่งค่าการลดลงสูงสุดกลับไป
+            drawdown = 0.0
+
+        # เก็บค่าการลดลงที่มากที่สุด
+        if drawdown > maximum_drawdown:
+            maximum_drawdown = drawdown
+
+    return float(maximum_drawdown)
+
 
 # ฟังก์ชันที่ 2: ใช้หาค่าเปอร์เซ็นไทล์
-def calculate_percentile(sorted_values, confidence_level):  # รับข้อมูลที่เรียงแล้วกับระดับความเชื่อมั่น
-    n = len(sorted_values)  # นับว่ามีข้อมูลทั้งหมดกี่ตัว
+def calculate_percentile(sorted_values, confidence_level):
+    """
+    หาค่าเปอร์เซ็นไทล์จากข้อมูลที่เรียงจากน้อยไปมากแล้ว
 
-    if n == 1:  # ถ้ามีข้อมูลแค่ตัวเดียว
-        return float(sorted_values[0])  # ก็ส่งค่านั้นกลับไปเลย
-    
-    position = (n - 1) * confidence_level  # หาตำแหน่งของค่าที่เราต้องการ
-    lower_index = math.floor(position)  # ปัดตำแหน่งลง
-    upper_index = math.ceil(position)  # ปัดตำแหน่งขึ้น
+    Args:
+        sorted_values (list): รายการตัวเลขที่เรียงจากน้อยไปมาก
+        confidence_level (float): ระดับเปอร์เซ็นไทล์ เช่น 0.95
 
-    if lower_index == upper_index:  # ถ้าตำแหน่งที่ได้เป็นตัวเดียวกัน
-        return float(sorted_values[lower_index])  # ก็ใช้ค่าตรงนั้นได้เลย
+    Returns:
+        float: ค่าที่ได้จากการคำนวณเปอร์เซ็นไทล์
+    """
 
-    fraction = position - lower_index  # หาระยะห่างของตำแหน่งที่ต้องการ
-    lower_value = sorted_values[lower_index]  # เก็บค่าตัวล่างไว้
-    upper_value = sorted_values[upper_index]  # เก็บค่าตัวบนไว้
+    # ตรวจว่าข้อมูลเป็น list หรือ tuple
+    if not isinstance(sorted_values, (list, tuple)):
+        raise TypeError("ข้อมูลต้องเป็น list หรือ tuple")
 
+    # ตรวจว่ามีข้อมูลหรือไม่
+    if len(sorted_values) == 0:
+        raise ValueError("ไม่พบข้อมูลสำหรับคำนวณเปอร์เซ็นไทล์")
+
+    # ตรวจว่าข้อมูลทุกตัวเป็นตัวเลขที่ถูกต้อง
+    if not all(
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and math.isfinite(value)
+        for value in sorted_values
+    ):
+        raise ValueError("ข้อมูลต้องเป็นตัวเลขที่ถูกต้อง")
+
+    # ตรวจว่าข้อมูลเรียงจากน้อยไปมากแล้วหรือไม่
+    if list(sorted_values) != sorted(sorted_values):
+        raise ValueError("ข้อมูลต้องเรียงจากน้อยไปมาก")
+
+    # ตรวจระดับความเชื่อมั่น
+    if (
+        not isinstance(confidence_level, (int, float))
+        or isinstance(confidence_level, bool)
+        or not math.isfinite(confidence_level)
+        or not 0 <= confidence_level <= 1
+    ):
+        raise ValueError("ระดับความเชื่อมั่นต้องอยู่ระหว่าง 0 ถึง 1")
+
+    # นับจำนวนข้อมูลทั้งหมด
+    n = len(sorted_values)
+
+    # ถ้ามีข้อมูลเพียงตัวเดียว ให้คืนค่าตัวนั้น
+    if n == 1:
+        return float(sorted_values[0])
+
+    # หาตำแหน่งของเปอร์เซ็นไทล์ที่ต้องการ
+    position = (n - 1) * confidence_level
+
+    # หาตำแหน่งด้านล่างและด้านบน
+    lower_index = math.floor(position)
+    upper_index = math.ceil(position)
+
+    # ถ้าทั้งสองตำแหน่งเป็นตัวเดียวกัน
+    # ก็ใช้ค่าจากตำแหน่งนั้นได้เลย
+    if lower_index == upper_index:
+        return float(sorted_values[lower_index])
+
+    # หาระยะห่างระหว่างตำแหน่งที่ต้องการ
+    fraction = position - lower_index
+
+    # ดึงค่าตัวล่างและตัวบนออกมา
+    lower_value = sorted_values[lower_index]
+    upper_value = sorted_values[upper_index]
+
+    # คำนวณค่าระหว่างตัวเลขทั้งสอง
     percentile = (
-        lower_value
-        + (upper_value - lower_value) * fraction  # คำนวณค่าที่อยู่ระหว่างสองตัวนี้
+        lower_value + (upper_value - lower_value) * fraction
     )
-    return float(percentile)  # ส่งค่าที่คำนวณได้กลับไป
+
+    return float(percentile)
+
 
 # ฟังก์ชันที่ 3: ใช้คำนวณความเสี่ยงในการลงทุน
 def calculate_risk(
-    simulation_paths,  # รับผลการจำลองทั้งหมด
-    initial_investment,  # รับจำนวนเงินที่ลงทุนไปตอนแรก
-    confidence_level  # รับระดับความเชื่อมั่น เช่น 0.95
+    simulation_paths,
+    initial_investment,
+    confidence_level
 ):
-    # เช็คก่อนว่ามีข้อมูลส่งเข้ามาหรือเปล่า
-    if not simulation_paths:
-        raise ValueError("ไม่พบข้อมูลเส้นทางการจำลอง")  # ถ้าไม่มีข้อมูลก็แจ้งเตือน
+    """
+    คำนวณความเสี่ยงและผลลัพธ์จากเส้นทางการจำลองทั้งหมด
 
-    if initial_investment <= 0:  # เช็คว่าเงินลงทุนเริ่มต้นมากกว่า 0 ไหม
-        raise ValueError("เงินลงทุนเริ่มต้นต้องมากกว่า 0")  # ถ้าไม่ถูกต้องก็แจ้งเตือน
+    Args:
+        simulation_paths (list): ผลการจำลองพอร์ตทั้งหมด
+        initial_investment (float): เงินลงทุนเริ่มต้น
+        confidence_level (float): ระดับความเชื่อมั่น เช่น 0.95
 
-    if not 0 <= confidence_level <= 1:  # เช็คว่าระดับความเชื่อมั่นอยู่ในช่วง 0 ถึง 1 ไหม
+    Returns:
+        dict: ผลการประเมินความเสี่ยงและมูลค่าพอร์ต
+    """
+
+    # ตรวจว่ามีข้อมูลการจำลองหรือไม่
+    if not isinstance(simulation_paths, (list, tuple)):
+        raise TypeError("ข้อมูลการจำลองต้องเป็น list หรือ tuple")
+
+    if len(simulation_paths) == 0:
+        raise ValueError("ไม่พบข้อมูลเส้นทางการจำลอง")
+
+    # ตรวจเงินลงทุนเริ่มต้น
+    if (
+        not isinstance(initial_investment, (int, float))
+        or isinstance(initial_investment, bool)
+        or not math.isfinite(initial_investment)
+        or initial_investment <= 0
+    ):
+        raise ValueError("เงินลงทุนเริ่มต้นต้องเป็นตัวเลขที่มากกว่า 0")
+
+    # ตรวจระดับความเชื่อมั่น
+    if (
+        not isinstance(confidence_level, (int, float))
+        or isinstance(confidence_level, bool)
+        or not math.isfinite(confidence_level)
+        or not 0 <= confidence_level <= 1
+    ):
         raise ValueError("ระดับความเชื่อมั่นต้องอยู่ระหว่าง 0 ถึง 1")
 
-    for path in simulation_paths:  # วนเช็คข้อมูลจำลองทีละรอบ
+    # ตรวจสอบข้อมูลการจำลองแต่ละรอบ
+    for path in simulation_paths:
 
-        if not path:  # ถ้ารอบไหนไม่มีข้อมูล
-            raise ValueError("เส้นทางการจำลองต้องไม่เป็นค่าว่าง")  # ก็แจ้งเตือน
+        if not isinstance(path, (list, tuple)) or len(path) == 0:
+            raise ValueError("เส้นทางการจำลองต้องไม่เป็นค่าว่าง")
 
-        for value in path:  # วนเช็คตัวเลขในแต่ละรอบ
+        for value in path:
 
-            if not isinstance(value, (int, float)):  # เช็คว่าข้อมูลเป็นตัวเลขหรือเปล่า
+            if (
+                not isinstance(value, (int, float))
+                or isinstance(value, bool)
+            ):
                 raise TypeError("ค่าภายในเส้นทางการจำลองต้องเป็นตัวเลข")
 
-            if not math.isfinite(value) or value < 0:  # เช็คว่าตัวเลขไม่ผิดปกติและไม่ติดลบ
-                raise ValueError("ค่าต้องเป็นตัวเลขที่ถูกต้องและไม่ติดลบ")
+            if not math.isfinite(value) or value < 0:
+                raise ValueError(
+                    "มูลค่าพอร์ตต้องเป็นตัวเลขที่ถูกต้องและไม่ติดลบ"
+                )
 
     # 1. หามูลค่าเงินลงทุนตอนจบของแต่ละรอบ
     final_values = [
-        path[-1]  # เอาค่าตัวสุดท้ายของแต่ละรอบออกมา
+        path[-1]
         for path in simulation_paths
     ]
-    average_final_value = statistics.mean(final_values)  # หาค่าเฉลี่ยของเงินลงทุนตอนจบ
-    best_final_value = max(final_values)  # หาว่ารอบไหนได้เงินมากที่สุด
-    worst_final_value = min(final_values)  # หาว่ารอบไหนได้เงินน้อยที่สุด
 
-    # 2. หาว่ามีโอกาสขาดทุนกี่เปอร์เซ็นต์
+    # หาค่าเฉลี่ย ค่าสูงสุด และค่าต่ำสุด
+    average_final_value = statistics.mean(final_values)
+    best_final_value = max(final_values)
+    worst_final_value = min(final_values)
+
+    # 2. หาว่ามีกี่รอบที่ขาดทุน
     loss_count = sum(
-        1  # เจอรอบที่ขาดทุนก็นับเพิ่ม 1
+        1
         for value in final_values
-        if value < initial_investment  # เช็คว่าเงินตอนจบน้อยกว่าเงินที่ลงทุนไปไหม
+        if value < initial_investment
     )
 
-    probability_of_loss = (
-        loss_count / len(final_values)  # เอาจำนวนรอบที่ขาดทุนหารด้วยจำนวนรอบทั้งหมด
-    )
+    # คำนวณสัดส่วนของรอบที่ขาดทุน
+    probability_of_loss = loss_count / len(final_values)
 
     # 3. คำนวณค่าความเสี่ยง VaR
     losses = [
-        initial_investment - value  # เอาเงินลงทุนเริ่มต้นลบกับเงินตอนจบ
+        initial_investment - value
         for value in final_values
     ]
 
-    losses.sort()  # เรียงค่าผลขาดทุนจากน้อยไปมาก
+    # เรียงผลขาดทุนจากน้อยไปมาก
+    losses.sort()
 
+    # หาค่า VaR ตามระดับความเชื่อมั่นที่กำหนด
     var_value = calculate_percentile(
         losses,
-        confidence_level  # ส่งข้อมูลผลขาดทุนกับระดับความเชื่อมั่นไปหาค่า VaR
+        confidence_level
     )
 
-    # 4. หาค่าการลดลงสูงสุดของพอร์ต (MDD)
+    # 4. คำนวณ Maximum Drawdown ของแต่ละรอบ
     maximum_drawdowns = [
-        calculate_maximum_drawdown(path)  # หาค่า MDD ของแต่ละรอบ
+        calculate_maximum_drawdown(path)
         for path in simulation_paths
     ]
 
-    average_mdd = statistics.mean(maximum_drawdowns)  # หาค่าเฉลี่ย MDD ของทุกรอบ
-    worst_mdd = max(maximum_drawdowns)  # หารอบที่พอร์ตลดลงหนักที่สุด
+    # หาค่าเฉลี่ย MDD และค่า MDD ที่มากที่สุด
+    average_mdd = statistics.mean(maximum_drawdowns)
+    worst_mdd = max(maximum_drawdowns)
 
-    # 5. เอาผลที่คำนวณได้มาเก็บรวมกัน
+    # 5. รวมผลลัพธ์ทั้งหมดไว้ใน Dictionary
     risk_results = {
-
-        "average_final_value":
-            float(average_final_value),  # เก็บค่าเฉลี่ยเงินลงทุนตอนจบ
-
-        "best_final_value":
-            float(best_final_value),  # เก็บเงินตอนจบที่มากที่สุด
-
-        "worst_final_value":
-            float(worst_final_value),  # เก็บเงินตอนจบที่น้อยที่สุด
-
-        "probability_of_loss":
-            float(probability_of_loss),  # เก็บโอกาสที่จะขาดทุน
-
-        "var":
-            float(var_value),  # เก็บค่าความเสี่ยง VaR
-
-        "average_mdd":
-            float(average_mdd),  # เก็บค่าเฉลี่ยการลดลงของพอร์ต
-
-        "worst_mdd":
-            float(worst_mdd)  # เก็บค่าการลดลงที่หนักที่สุด
+        "average_final_value": float(average_final_value),
+        "best_final_value": float(best_final_value),
+        "worst_final_value": float(worst_final_value),
+        "probability_of_loss": float(probability_of_loss),
+        "var": float(var_value),
+        "average_mdd": float(average_mdd),
+        "worst_mdd": float(worst_mdd)
     }
 
-    return risk_results  # ส่งผลลัพธ์ทั้งหมดกลับไปให้ส่วนอื่นใช้
+    return risk_results
 
-# ฟังก์ชันที่ 4: เอาผลที่ได้มาสร้างเป็นรายงาน
-def generate_report(analysis, output_path):  # รับข้อมูลที่วิเคราะห์แล้วกับตำแหน่งที่จะเซฟไฟล์
 
-    # เช็คก่อนว่าข้อมูลที่ต้องใช้ทำรายงานมีครบไหม
+# ฟังก์ชันที่ 4: สร้างรายงานผลการลงทุน
+def generate_report(analysis, output_path):
+    """
+    สร้างรายงานผลการลงทุนและบันทึกเป็นไฟล์ TXT
+
+    Args:
+        analysis (dict): ข้อมูลผลการวิเคราะห์ทั้งหมด
+        output_path (str): ตำแหน่งที่จะบันทึกไฟล์รายงาน
+
+    Returns:
+        str: ข้อความรายงานทั้งหมด
+    """
+
+    # ตรวจว่าข้อมูลที่รับมาเป็น Dictionary หรือไม่
+    if not isinstance(analysis, dict):
+        raise TypeError("ข้อมูลสำหรับสร้างรายงานต้องเป็น Dictionary")
+
+    # ตรวจตำแหน่งบันทึกไฟล์
+    if not isinstance(output_path, str) or not output_path.strip():
+        raise ValueError("กรุณาระบุตำแหน่งบันทึกไฟล์")
+
+    # รายการข้อมูลที่จำเป็นต้องใช้ในรายงาน
     required_keys = [
-        "ticker",  # ชื่อหุ้น
-        "initial_investment",  # เงินที่ลงทุนตอนแรก
-        "trading_days",  # จำนวนวันซื้อขาย
-        "simulations",  # จำนวนรอบที่จำลอง
-        "confidence_level",  # ระดับความเชื่อมั่น
-        "average_final_value",  # เงินลงทุนเฉลี่ยตอนจบ
-        "best_final_value",  # เงินลงทุนที่มากที่สุด
-        "worst_final_value",  # เงินลงทุนที่น้อยที่สุด
-        "probability_of_loss",  # โอกาสขาดทุน
-        "var",  # ค่าความเสี่ยง VaR
-        "average_mdd",  # ค่าเฉลี่ย MDD
-        "worst_mdd"  # ค่า MDD ที่มากที่สุด
+        "ticker",
+        "initial_investment",
+        "trading_days",
+        "simulations",
+        "confidence_level",
+        "average_final_value",
+        "best_final_value",
+        "worst_final_value",
+        "probability_of_loss",
+        "var",
+        "average_mdd",
+        "worst_mdd"
     ]
 
-    for key in required_keys:  # วนเช็คข้อมูลทีละตัว
+    # ตรวจว่าข้อมูลที่จำเป็นมีครบหรือไม่
+    for key in required_keys:
 
-        if key not in analysis:  # ถ้าหาข้อมูลตัวไหนไม่เจอ
+        if key not in analysis:
             raise KeyError(
-                f"ไม่พบข้อมูลที่จำเป็นในรายงาน: {key}"  # แจ้งว่าข้อมูลตัวไหนหายไป
+                f"ไม่พบข้อมูลที่จำเป็นในรายงาน: {key}"
             )
 
+    # ตรวจข้อมูลตัวเลขที่ต้องใช้ในรายงาน
+    numeric_keys = [
+        "initial_investment",
+        "confidence_level",
+        "average_final_value",
+        "best_final_value",
+        "worst_final_value",
+        "probability_of_loss",
+        "var",
+        "average_mdd",
+        "worst_mdd"
+    ]
 
-    # ดึงข้อมูลเพิ่มเติม ถ้ามีส่งมา
-    mean_daily_return = analysis.get(
-        "mean_daily_return"  # ดึงค่าผลตอบแทนเฉลี่ยรายวัน
-    )
+    for key in numeric_keys:
+        value = analysis[key]
 
-    annualized_volatility = analysis.get(
-        "annualized_volatility"  # ดึงค่าความผันผวนต่อปี
-    )
+        if (
+            not isinstance(value, (int, float))
+            or isinstance(value, bool)
+            or not math.isfinite(value)
+        ):
+            raise ValueError(f"ข้อมูล {key} ต้องเป็นตัวเลขที่ถูกต้อง")
 
-    # เริ่มสร้างเนื้อหาที่จะเอาไปใส่ในรายงาน
+    # ตรวจชื่อหุ้น
+    if not isinstance(analysis["ticker"], str) or not analysis["ticker"].strip():
+        raise ValueError("ชื่อหุ้นไม่ถูกต้อง")
+
+    # ตรวจจำนวนวันซื้อขายและจำนวนครั้งที่จำลอง
+    for key in ["trading_days", "simulations"]:
+        value = analysis[key]
+
+        if (
+            not isinstance(value, int)
+            or isinstance(value, bool)
+            or value <= 0
+        ):
+            raise ValueError(f"{key} ต้องเป็นจำนวนเต็มที่มากกว่า 0")
+
+    # ตรวจค่าพื้นฐานก่อนสร้างรายงาน
+    if analysis["initial_investment"] <= 0:
+        raise ValueError("เงินลงทุนเริ่มต้นต้องมากกว่า 0")
+
+    if not 0 <= analysis["confidence_level"] <= 1:
+        raise ValueError("ระดับความเชื่อมั่นต้องอยู่ระหว่าง 0 ถึง 1")
+
+    if not 0 <= analysis["probability_of_loss"] <= 1:
+        raise ValueError("โอกาสขาดทุนต้องอยู่ระหว่าง 0 ถึง 1")
+
+    if not 0 <= analysis["average_mdd"] <= 1:
+        raise ValueError("ค่า Average MDD ไม่ถูกต้อง")
+
+    if not 0 <= analysis["worst_mdd"] <= 1:
+        raise ValueError("ค่า Worst MDD ไม่ถูกต้อง")
+
+    # ดึงข้อมูลเพิ่มเติม ถ้ามีส่งมาจากการวิเคราะห์
+    mean_daily_return = analysis.get("mean_daily_return")
+    annualized_volatility = analysis.get("annualized_volatility")
+
+    # ตรวจข้อมูลเพิ่มเติมก่อนนำไปแสดง
+    for key, value in [
+        ("mean_daily_return", mean_daily_return),
+        ("annualized_volatility", annualized_volatility)
+    ]:
+        if value is not None:
+            if (
+                not isinstance(value, (int, float))
+                or isinstance(value, bool)
+                or not math.isfinite(value)
+            ):
+                raise ValueError(f"ข้อมูล {key} ไม่ถูกต้อง")
+
+    # เริ่มสร้างข้อความรายงาน
     report_lines = [
-        "=" * 60,  # สร้างเส้นคั่นด้านบน
+        "=" * 60,
         "QUANT - ระบบจำลองการลงทุนในหุ้น",
         "รายงานการประเมินความเสี่ยงและผลการลงทุน",
         "=" * 60,
-        f"วันที่จัดทำรายงาน: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",  # ใส่วันกับเวลาตอนที่สร้างรายงาน
+        f"วันที่จัดทำรายงาน: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
 
         "",
         "ข้อมูลหุ้น",
         "-" * 60,
-        f"ชื่อย่อหุ้น: {analysis['ticker']}",  # แสดงชื่อหุ้นที่เราเลือก
+        f"ชื่อย่อหุ้น: {analysis['ticker']}",
 
         "",
         "การตั้งค่าการจำลอง",
         "-" * 60,
-        f"เงินลงทุนเริ่มต้น: {analysis['initial_investment']:,.2f}",  # แสดงเงินที่ใช้ลงทุน
-        f"จำนวนวันซื้อขาย: {analysis['trading_days']}",  # แสดงจำนวนวันที่ใช้จำลอง
-        f"จำนวนครั้งในการจำลอง: {analysis['simulations']}",  # แสดงว่าจำลองไปกี่รอบ
-        f"ระดับความเชื่อมั่น: {analysis['confidence_level'] * 100:.2f}%",  # เปลี่ยน 0.95 ให้เป็น 95%
+        f"เงินลงทุนเริ่มต้น: {analysis['initial_investment']:,.2f}",
+        f"จำนวนวันซื้อขาย: {analysis['trading_days']}",
+        f"จำนวนครั้งในการจำลอง: {analysis['simulations']}",
+        f"ระดับความเชื่อมั่น: {analysis['confidence_level'] * 100:.2f}%",
 
         "",
         "ผลการลงทุน",
         "-" * 60,
-        f"มูลค่าเงินลงทุนเฉลี่ยเมื่อสิ้นสุด: {analysis['average_final_value']:,.2f}",  # แสดงเงินเฉลี่ยตอนจบ
-        f"มูลค่าเงินลงทุนสูงสุด: {analysis['best_final_value']:,.2f}",  # แสดงเงินที่ได้มากที่สุด
-        f"มูลค่าเงินลงทุนต่ำสุด: {analysis['worst_final_value']:,.2f}",  # แสดงเงินที่ได้น้อยที่สุด
+        f"มูลค่าเงินลงทุนเฉลี่ยเมื่อสิ้นสุด: {analysis['average_final_value']:,.2f}",
+        f"มูลค่าเงินลงทุนสูงสุด: {analysis['best_final_value']:,.2f}",
+        f"มูลค่าเงินลงทุนต่ำสุด: {analysis['worst_final_value']:,.2f}",
 
         "",
         "การประเมินความเสี่ยง",
         "-" * 60,
-        f"โอกาสที่จะขาดทุน: {analysis['probability_of_loss'] * 100:.2f}%",  # แสดงโอกาสขาดทุนเป็นเปอร์เซ็นต์
-        f"มูลค่าความเสี่ยง (VaR): {analysis['var']:,.2f}",  # แสดงค่า VaR
-        f"ค่าเฉลี่ยการลดลงสูงสุดของพอร์ต (MDD): {analysis['average_mdd'] * 100:.2f}%",  # แสดงค่าเฉลี่ย MDD เป็นเปอร์เซ็นต์
-        f"การลดลงสูงสุดของพอร์ต: {analysis['worst_mdd'] * 100:.2f}%",  # แสดงค่า MDD ที่มากที่สุด
+        f"โอกาสที่จะขาดทุน: {analysis['probability_of_loss'] * 100:.2f}%",
+        f"มูลค่าความเสี่ยง (VaR): {analysis['var']:,.2f}",
+        f"ค่าเฉลี่ยการลดลงสูงสุดของพอร์ต (MDD): {analysis['average_mdd'] * 100:.2f}%",
+        f"การลดลงสูงสุดของพอร์ต: {analysis['worst_mdd'] * 100:.2f}%"
     ]
 
-    # ถ้ามีข้อมูลผลตอบแทนรายวันก็เพิ่มเข้าไปในรายงาน
+    # ถ้ามีผลตอบแทนเฉลี่ยรายวัน ให้เพิ่มลงในรายงาน
     if mean_daily_return is not None:
         report_lines.append(
-            f"ผลตอบแทนเฉลี่ยรายวัน: {mean_daily_return * 100:.4f}%"  # แปลงค่าเป็นเปอร์เซ็นต์แล้วเพิ่มเข้าไป
+            f"ผลตอบแทนเฉลี่ยรายวัน: {mean_daily_return * 100:.4f}%"
         )
 
-    # ถ้ามีข้อมูลความผันผวนต่อปีก็เพิ่มเข้าไปเหมือนกัน
+    # ถ้ามีค่าความผันผวนต่อปี ให้เพิ่มลงในรายงาน
     if annualized_volatility is not None:
         report_lines.append(
-            f"ความผันผวนต่อปี: {annualized_volatility * 100:.2f}%"  # แสดงค่าความผันผวนเป็นเปอร์เซ็นต์
+            f"ความผันผวนต่อปี: {annualized_volatility * 100:.2f}%"
         )
 
-    # เพิ่มหมายเหตุไว้ท้ายรายงาน
+    # เพิ่มคำอธิบายท้ายรายงาน
     report_lines.extend([
         "",
         "หมายเหตุของรายงาน",
@@ -242,38 +441,46 @@ def generate_report(analysis, output_path):  # รับข้อมูลที
         "5. ผลการจำลองไม่สามารถรับประกันผลตอบแทนจากการลงทุนในอนาคตได้",
         "=" * 60
     ])
-    report_text = "\n".join(report_lines)  # เอาข้อความทุกบรรทัดมาต่อกันเป็นรายงานเดียว
 
-    # เตรียมโฟลเดอร์สำหรับเก็บรายงาน
+    # นำข้อความแต่ละบรรทัดมาต่อกันเป็นรายงานเดียว
+    report_text = "\n".join(report_lines)
+
+    # หาตำแหน่งโฟลเดอร์ที่จะบันทึกรายงาน
     directory = os.path.dirname(
-        os.path.abspath(output_path)  # หาตำแหน่งเต็มของไฟล์ที่จะบันทึก
+        os.path.abspath(output_path)
     )
 
-    os.makedirs(directory, exist_ok=True)  # ถ้ายังไม่มีโฟลเดอร์ก็สร้างขึ้นมา
+    # ถ้าโฟลเดอร์ยังไม่มี ให้สร้างขึ้นมา
+    os.makedirs(directory, exist_ok=True)
 
-    # เปิดไฟล์เพื่อเขียนรายงานลงไป
+    # เปิดไฟล์และบันทึกรายงาน โดยใช้ UTF-8 เพื่อรองรับภาษาไทย
     with open(
         output_path,
-        "w",  # ใช้โหมดเขียนไฟล์
-        encoding="utf-8"  # ตั้งค่าให้รองรับภาษาไทย
+        "w",
+        encoding="utf-8"
     ) as file:
 
-        file.write(report_text)  # เอารายงานทั้งหมดเขียนลงไฟล์
+        file.write(report_text)
 
-    return report_text  # ส่งข้อความรายงานกลับไป
+    # ส่งข้อความรายงานกลับไปให้ส่วนอื่นใช้งาน
+    return report_text
 
-# ส่วนนี้เอาไว้ลองทดสอบว่า MODULE 3 ทำงานได้ไหม
+
+# ส่วนนี้ใช้ทดสอบ MODULE 3 แยกจากโปรแกรมหลัก
 if __name__ == "__main__":
 
-    # สร้างข้อมูลจำลองขึ้นมาไว้ลองทดสอบ
+    # สร้างข้อมูลจำลองตัวอย่าง 3 รอบ
     simulation_paths = [
         [10000, 10500, 11000],
         [10000, 9500, 9000],
         [10000, 10800, 11500]
     ]
 
-    initial_investment = 10000  # ตั้งเงินลงทุนเริ่มต้นไว้ที่ 10,000
-    confidence_level = 0.95  # ตั้งระดับความเชื่อมั่นไว้ที่ 95%
+    # กำหนดเงินลงทุนเริ่มต้น
+    initial_investment = 10000
+
+    # กำหนดระดับความเชื่อมั่น 95%
+    confidence_level = 0.95
 
     # ส่งข้อมูลไปคำนวณความเสี่ยง
     risk_results = calculate_risk(
@@ -281,8 +488,6 @@ if __name__ == "__main__":
         initial_investment,
         confidence_level
     )
-
-    print("\nผลการประเมินความเสี่ยง")  # แสดงหัวข้อก่อนโชว์ผลลัพธ์
 
     # ตั้งชื่อภาษาไทยให้กับผลลัพธ์แต่ละตัว
     thai_labels = {
@@ -295,27 +500,30 @@ if __name__ == "__main__":
         "worst_mdd": "การลดลงสูงสุดของพอร์ต"
     }
 
-    for key, value in risk_results.items():  # วนเอาผลลัพธ์ออกมาทีละตัว
-        label = thai_labels.get(key, key)  # เปลี่ยนชื่อจากภาษาอังกฤษเป็นภาษาไทย
-        print(f"{label}: {value}")  # แสดงชื่อกับค่าที่คำนวณได้
+    # แสดงผลการประเมินความเสี่ยง
+    print("\nผลการประเมินความเสี่ยง")
 
-    # รวมข้อมูลทั้งหมดไว้เพื่อเอาไปสร้างรายงาน
+    for key, value in risk_results.items():
+        label = thai_labels.get(key, key)
+        print(f"{label}: {value}")
+
+    # รวมข้อมูลทั้งหมดเพื่อใช้สร้างรายงานตัวอย่าง
     analysis = {
-        "ticker": "DEMO",  # ตั้งชื่อหุ้นตัวอย่างไว้ทดสอบ
-        "initial_investment": initial_investment,  # ใส่เงินลงทุนเริ่มต้น
-        "trading_days": 2,  # กำหนดจำนวนวันซื้อขาย
-        "simulations": len(simulation_paths),  # นับว่ามีการจำลองทั้งหมดกี่รอบ
-        "confidence_level": confidence_level,  # ใส่ระดับความเชื่อมั่น
-        **risk_results,  # เอาผลความเสี่ยงทั้งหมดมารวมไว้ตรงนี้
-        "mean_daily_return": 0.001,  # ใส่ผลตอบแทนรายวันตัวอย่าง
-        "annualized_volatility": 0.20  # ใส่ค่าความผันผวนต่อปีตัวอย่าง
+        "ticker": "DEMO",
+        "initial_investment": initial_investment,
+        "trading_days": 2,
+        "simulations": len(simulation_paths),
+        "confidence_level": confidence_level,
+        **risk_results,
+        "mean_daily_return": 0.001,
+        "annualized_volatility": 0.20
     }
 
-    # สร้างรายงานแล้วเซฟเป็นไฟล์ TXT
+    # สร้างรายงานตัวอย่างแยกจากรายงานหลัก
     report = generate_report(
         analysis,
-        "reports/risk_report.txt"  # กำหนดชื่อไฟล์กับโฟลเดอร์ที่จะเก็บ
+        "reports/demo_risk_report.txt"
     )
 
-    print("\nสร้างรายงานเรียบร้อยแล้ว")  # บอกว่าสร้างไฟล์เสร็จแล้ว
-    print(report)  # แสดงรายงานทั้งหมดออกมาดู
+    print("\nสร้างรายงานตัวอย่างเรียบร้อยแล้ว")
+    print(report)
