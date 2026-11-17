@@ -1,29 +1,33 @@
-# Lessons Learned and Future Improvements
+# สิ่งที่ได้เรียนรู้และแนวทางพัฒนาต่อ
 
-## What the project demonstrates
-- A Python program can be divided into modules with clear responsibilities.
-- Historical prices must be converted into daily returns before volatility and bootstrap simulation.
-- A list of dictionaries is useful for representing dated stock-price records.
-- CSV files provide a simple persistent format for historical prices.
-- Input validation and exception handling keep terminal programs usable when users make mistakes or files are missing.
-- A fixed random seed makes simulation output reproducible.
+## 1. สิ่งที่โครงงานนี้แสดงให้เห็น
 
-## Important concepts
-- Daily return measures the proportional price change from one observation to the next.
-- Volatility measures dispersion of returns; annualization uses the square root of 252 trading days.
-- Historical Bootstrap samples observed returns with replacement.
-- VaR is a percentile-based loss estimate, not a guaranteed maximum loss.
-- Maximum Drawdown measures the largest decline from a running peak.
+- โปรแกรม Python สามารถแบ่งออกเป็นหลายโมดูล โดยแต่ละโมดูลมีหน้าที่รับผิดชอบชัดเจน
+- ต้องแปลงราคาหุ้นย้อนหลังเป็นผลตอบแทนรายวันก่อนนำไปคำนวณความผันผวนและจำลอง Bootstrap
+- List of Dictionaries เหมาะสำหรับจัดเก็บข้อมูลราคาหุ้นที่มีวันที่กำกับ
+- ไฟล์ CSV เป็นรูปแบบพื้นฐานที่ใช้งานง่ายสำหรับจัดเก็บข้อมูลราคาย้อนหลัง
+- การตรวจสอบข้อมูลที่ผู้ใช้กรอกและการจัดการข้อผิดพลาด ช่วยให้โปรแกรม Terminal ใช้งานได้ดีขึ้นเมื่อผู้ใช้กรอกข้อมูลผิดหรือไฟล์สูญหาย
+- การกำหนด Random Seed คงที่ช่วยให้สามารถทำซ้ำผลการจำลองได้
 
-## Limitations
-- Historical returns may not represent future market conditions.
-- The current model does not include fees, taxes, slippage, liquidity constraints, or regime changes.
-- Yahoo Finance availability and ticker coverage can vary.
-- The offline sample is intended for demonstration, not live trading.
+## 2. แนวคิดสำคัญที่เกี่ยวข้อง
 
-## Future improvements
-- Add user-selectable confidence levels and random seeds.
-- Add a clear data-source timestamp and date range to each report.
-- Add tests using Python's `unittest` module.
-- Support multiple assets and portfolio weights.
-- Compare bootstrap results with a parametric Monte Carlo model.
+- **ผลตอบแทนรายวัน (Daily Return):** วัดการเปลี่ยนแปลงของราคาหุ้นในรูปสัดส่วนเมื่อเทียบกับข้อมูลก่อนหน้า
+- **ความผันผวน (Volatility):** วัดการกระจายตัวของผลตอบแทน โดยการคำนวณเป็นรายปีใช้รากที่สองของ 252 เป็นตัวคูณ
+- **Historical Bootstrap:** สุ่มเลือกผลตอบแทนที่สังเกตได้จากอดีต โดยสุ่มแบบใส่คืน
+- **Value at Risk (VaR):** ค่าประมาณการขาดทุนจากเปอร์เซ็นไทล์ ไม่ใช่การรับประกันว่าจะเป็นขาดทุนสูงสุด
+- **Maximum Drawdown (MDD):** วัดการลดลงของมูลค่าพอร์ตจากจุดสูงสุดระหว่างเส้นทางการลงทุน
+
+## 3. ข้อจำกัดของระบบ
+
+- ผลตอบแทนในอดีตอาจไม่สามารถแทนสภาวะตลาดในอนาคตได้
+- แบบจำลองปัจจุบันยังไม่รวมค่าธรรมเนียม ภาษี Slippage ข้อจำกัดด้านสภาพคล่อง หรือการเปลี่ยนแปลงระบอบตลาด
+- ความพร้อมใช้งานของ Yahoo Finance และจำนวนหุ้นที่รองรับอาจเปลี่ยนแปลงได้
+- ข้อมูลออฟไลน์มีไว้เพื่อสาธิตการทำงาน ไม่ได้ออกแบบมาเพื่อใช้ซื้อขายจริง
+
+## 4. แนวทางพัฒนาในอนาคต
+
+- เพิ่มตัวเลือกให้ผู้ใช้กำหนดระดับความเชื่อมั่นและ Random Seed ได้เอง
+- แสดงวันและเวลาที่ดึงข้อมูล รวมถึงช่วงวันที่ของข้อมูลในรายงาน
+- เพิ่มการทดสอบอัตโนมัติด้วยโมดูล `unittest` ของ Python
+- รองรับสินทรัพย์หลายรายการและการกำหนดน้ำหนักของแต่ละสินทรัพย์ในพอร์ต
+- เปรียบเทียบผลการจำลอง Bootstrap กับแบบจำลอง Monte Carlo ที่ตั้งสมมติฐานการแจกแจงทางสถิติ
