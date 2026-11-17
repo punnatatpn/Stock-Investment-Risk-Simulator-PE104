@@ -1,0 +1,4 @@
+# Runtime dependencies
+# Python standard library modules (csv, datetime, logging, math, os, tempfile,
+# random, statistics) are included with Python and do not need installation.
+yfinance>=0.2.40
