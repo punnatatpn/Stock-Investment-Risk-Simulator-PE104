@@ -1,115 +1,124 @@
-# QUANT – Stock Investment Risk Simulator
+# QUANT – ระบบจำลองความเสี่ยงจากการลงทุนในหุ้น (Stock Investment Risk Simulator)
 
-PE104 terminal-based Python project for studying historical stock returns, volatility, Monte Carlo outcomes, and portfolio risk.
+โครงงานวิชา PE104 พัฒนาด้วยภาษา Python และใช้งานผ่าน Terminal เท่านั้น มีวัตถุประสงค์เพื่อศึกษาผลตอบแทนย้อนหลัง ความผันผวนของราคาหุ้น ผลลัพธ์จากการจำลอง Monte Carlo และความเสี่ยงของการลงทุน
 
-## Problem and objective
+## 1. ปัญหาและวัตถุประสงค์
 
-Stock prices fluctuate over time. This program uses historical closing prices to calculate daily returns and estimate how a hypothetical investment could behave under repeated resampling of historical returns. It is an educational simulator, not an investment recommendation.
+ราคาหุ้นมีการเปลี่ยนแปลงอยู่ตลอดเวลา โปรแกรมนี้นำราคาปิดย้อนหลังมาคำนวณผลตอบแทนรายวัน และสุ่มนำผลตอบแทนในอดีตกลับมาใช้ซ้ำเพื่อจำลองความเป็นไปได้ของมูลค่าการลงทุนในอนาคตหลายครั้ง
 
-## Features
+โปรแกรมนี้จัดทำขึ้นเพื่อการศึกษาและเป็นเครื่องมือทดลองเท่านั้น ไม่ใช่คำแนะนำในการซื้อหรือขายหลักทรัพย์
 
-1. Accepts a stock ticker and validates user input.
-2. Retrieves historical prices through Yahoo Finance using `yfinance`.
-3. Stores downloaded data in `data/cache/stock_prices.csv`; the bundled sample file is kept separate.
-4. Calculates daily returns and sample-standard-deviation volatility, annualized using 252 trading days.
-5. Runs Historical Bootstrap Monte Carlo simulations using a reproducible random seed.
-6. Calculates average, best and worst final portfolio value, probability of loss, percentile loss (VaR), and maximum drawdown.
-7. Displays a formatted risk report and saves it to `reports/risk_report.txt`.
-8. Offers an offline demo using the bundled AAPL sample data.
+## 2. ความสามารถของระบบ
 
-## Project structure
+1. รับสัญลักษณ์หุ้น (Ticker) จากผู้ใช้และตรวจสอบความถูกต้องของข้อมูลที่กรอก
+2. ดึงข้อมูลราคาหุ้นย้อนหลังจาก Yahoo Finance โดยใช้ไลบรารี `yfinance`
+3. บันทึกข้อมูลที่ดาวน์โหลดไว้ใน `data/cache/stock_prices.csv` โดยแยกออกจากไฟล์ข้อมูลตัวอย่าง
+4. คำนวณผลตอบแทนรายวัน (Daily Return) และความผันผวนจากส่วนเบี่ยงเบนมาตรฐานของกลุ่มตัวอย่าง โดยคำนวณเป็นรายปีด้วยจำนวนวันซื้อขาย 252 วัน
+5. จำลอง Historical Bootstrap Monte Carlo โดยสุ่มผลตอบแทนรายวันในอดีตแบบใส่คืน
+6. คำนวณมูลค่าพอร์ตลงทุนเฉลี่ย มูลค่าสูงสุดและต่ำสุด ความน่าจะเป็นที่จะขาดทุน Value at Risk (VaR) และ Maximum Drawdown (MDD)
+7. แสดงรายงานความเสี่ยงใน Terminal และบันทึกลงไฟล์ `reports/risk_report.txt`
+8. มีโหมดสาธิตแบบออฟไลน์โดยใช้ข้อมูลหุ้น AAPL ที่จัดเตรียมไว้ในโครงการ
+
+## 3. โครงสร้างไฟล์ของโครงการ
 
 ```text
 Stock-Investment-Risk-Simulator-PE104/
-├── main.py
-├── data_analysis.py
-├── simulation.py
-├── risk_report.py
+├── main.py                 # โปรแกรมหลักและเมนู Terminal
+├── data_analysis.py        # จัดการข้อมูลหุ้นและคำนวณผลตอบแทน
+├── simulation.py           # วิเคราะห์ความผันผวนและจำลอง Monte Carlo
+├── risk_report.py          # ประเมินความเสี่ยงและสร้างรายงาน
 ├── README.md
 ├── requirements.txt
 ├── .gitignore
 ├── demo_output.txt
 ├── sample_data/
-│   └── stock_prices.csv
+│   └── stock_prices.csv    # ข้อมูลตัวอย่างสำหรับโหมดออฟไลน์
 ├── data/
-│   └── cache/                 # created when live data is downloaded
+│   └── cache/              # สร้างเมื่อมีการดาวน์โหลดข้อมูลจริง
 ├── reports/
-│   └── risk_report.txt        # created after an analysis
+│   └── risk_report.txt     # สร้างหลังจากวิเคราะห์ข้อมูล
 └── docs/
     ├── requirements.md
     ├── test_plan.md
     ├── ai_log.md
-    └── lessons.md
+    ├── lessons.md
+    └── version_history.md
 ```
 
-## Requirements
+## 4. สิ่งที่ต้องเตรียมก่อนใช้งาน
 
-- Python 3.9 or newer (the project uses `str.removesuffix`).
-- Internet connection for live Yahoo Finance data.
-- The `yfinance` package for live data retrieval.
-- Standard-library modules are used for CSV, validation, calculations, file operations, statistics, and simulation.
+- Python เวอร์ชัน 3.9 ขึ้นไป (โครงการใช้เมธอด `str.removesuffix`)
+- การเชื่อมต่ออินเทอร์เน็ตสำหรับดึงข้อมูลหุ้นแบบเรียลไทม์/ย้อนหลังจาก Yahoo Finance
+- ไลบรารี `yfinance` สำหรับดึงข้อมูลหุ้น
+- ส่วนการอ่าน CSV การตรวจสอบข้อมูล การคำนวณทางคณิตศาสตร์ การจัดการไฟล์ สถิติ และการจำลอง ใช้ไลบรารีมาตรฐานที่มาพร้อม Python
 
-Install dependencies:
+ติดตั้งไลบรารีที่จำเป็นด้วยคำสั่ง:
 
 ```bash
 python3 -m pip install -r requirements.txt
 ```
 
-## Run
+## 5. วิธีเปิดใช้งานโปรแกรม
 
-From the project root:
+เปิด Terminal และเข้าไปยังโฟลเดอร์หลักของโครงการ จากนั้นเรียกใช้:
 
 ```bash
 python3 main.py
 ```
 
-On systems where `python` points to Python 3, `python main.py` also works.
+หากเครื่องกำหนดให้คำสั่ง `python` เรียกใช้ Python 3 อยู่แล้ว สามารถใช้ `python main.py` ได้เช่นกัน
 
-### Main menu
+### เมนูหลัก
 
-- `1` – Run live stock risk analysis (internet required).
-- `2` – View the previous saved report.
-- `3` – Run the offline AAPL sample-data demonstration.
-- `0` – Exit.
+- `1` – วิเคราะห์ความเสี่ยงของหุ้นโดยดึงข้อมูลจาก Yahoo Finance (ต้องเชื่อมต่ออินเทอร์เน็ต)
+- `2` – เปิดดูรายงานการวิเคราะห์ที่บันทึกไว้ก่อนหน้า
+- `3` – ทดลองใช้งานแบบออฟไลน์ด้วยข้อมูลหุ้น AAPL ตัวอย่าง
+- `0` – ออกจากโปรแกรม
 
-For the offline demo, choose option 3, then enter values when prompted. It uses `sample_data/stock_prices.csv` and does not download or overwrite that file.
+สำหรับโหมดออฟไลน์ ให้เลือกเมนู 3 แล้วกรอกค่าตามที่โปรแกรมถาม ระบบจะอ่านข้อมูลจาก `sample_data/stock_prices.csv` โดยไม่ดาวน์โหลดข้อมูลจากอินเทอร์เน็ตและไม่เขียนทับไฟล์ตัวอย่างดังกล่าว
 
-## Methods and assumptions
+## 6. หลักการและวิธีคำนวณ
 
-### Daily return
+### 6.1 ผลตอบแทนรายวัน (Daily Return)
+
+คำนวณจากราคาปิดของวันปัจจุบันเทียบกับวันก่อนหน้า:
 
 `daily return = (current close / previous close) - 1`
 
-### Volatility
+### 6.2 ความผันผวน (Volatility)
 
-The program calculates sample variance and sample standard deviation from daily returns. Annualized volatility is daily standard deviation multiplied by the square root of 252.
+โปรแกรมคำนวณความแปรปรวนของกลุ่มตัวอย่างและส่วนเบี่ยงเบนมาตรฐานจากผลตอบแทนรายวัน จากนั้นคำนวณความผันผวนต่อปีโดยนำส่วนเบี่ยงเบนมาตรฐานรายวันคูณด้วยรากที่สองของ 252 ซึ่งเป็นจำนวนวันซื้อขายโดยประมาณต่อปี
 
-### Historical Bootstrap Monte Carlo
+### 6.3 การจำลอง Historical Bootstrap Monte Carlo
 
-Each simulated day samples one observed historical daily return with replacement. The sampled return is applied to the current simulated portfolio value. The random seed is fixed at 42 by default to make runs reproducible.
+ในแต่ละวันที่จำลอง โปรแกรมจะสุ่มเลือกผลตอบแทนรายวันหนึ่งค่าจากข้อมูลผลตอบแทนในอดีต โดยสุ่มแบบใส่คืน (มีโอกาสสุ่มได้ค่าซ้ำ) แล้วนำผลตอบแทนที่สุ่มได้ไปคำนวณกับมูลค่าพอร์ตจำลอง ทำซ้ำหลายเส้นทางตามจำนวนรอบที่ผู้ใช้กำหนด
 
-### Risk measures
+ค่าเริ่มต้นของ Random Seed คือ 42 เพื่อให้สามารถทำซ้ำการจำลองและเปรียบเทียบผลลัพธ์ได้
 
-- Probability of loss: proportion of simulations whose final value is below the initial investment.
-- VaR: the selected percentile of simulated monetary losses at the configured confidence level (95% in the main workflow).
-- Maximum drawdown: largest percentage decline from a previous running portfolio peak.
+### 6.4 ตัวชี้วัดความเสี่ยง
 
-## Data and limitations
+- **Probability of Loss:** สัดส่วนของรอบจำลองที่มูลค่าพอร์ตสุดท้ายต่ำกว่าเงินลงทุนเริ่มต้น
+- **Value at Risk (VaR):** ค่าประมาณการขาดทุนที่คำนวณจากเปอร์เซ็นไทล์ที่กำหนดของผลขาดทุนจำลอง โดยกระบวนการหลักตั้งระดับความเชื่อมั่นไว้ที่ 95%
+- **Maximum Drawdown (MDD):** เปอร์เซ็นต์การลดลงมากที่สุดของมูลค่าพอร์ต เมื่อเทียบกับจุดสูงสุดก่อนหน้าระหว่างเส้นทางการลงทุน
 
-- Yahoo Finance data availability, ticker formats, network access, and service behavior are outside this project's control.
-- Live data is cached in `data/cache/stock_prices.csv`; bundled example data remains in `sample_data/stock_prices.csv`.
-- Sample data is historical demonstration data, not a promise of live or current market prices.
-- Bootstrap simulation assumes historical daily returns are representative of possible future daily returns. It does not model all market regimes, transaction costs, taxes, liquidity, or changing volatility.
-- VaR is a percentile estimate, not the maximum possible loss.
-- The output is for coursework and education only. It is not financial advice.
+## 7. แหล่งข้อมูลและข้อจำกัด
 
-## Team modules
+- ความพร้อมใช้งานของ Yahoo Finance รูปแบบ Ticker การเชื่อมต่อเครือข่าย และการให้บริการของแหล่งข้อมูลอยู่นอกเหนือการควบคุมของโครงการ
+- ข้อมูลที่ดาวน์โหลดจริงจะถูกเก็บไว้ใน `data/cache/stock_prices.csv` ส่วนข้อมูลตัวอย่างจะอยู่ใน `sample_data/stock_prices.csv`
+- ข้อมูลตัวอย่างเป็นข้อมูลย้อนหลังเพื่อการสาธิต ไม่ได้รับประกันว่าเป็นราคาตลาดล่าสุด
+- การจำลองแบบ Bootstrap ตั้งอยู่บนสมมติฐานว่าผลตอบแทนในอดีตสามารถใช้เป็นตัวแทนของผลตอบแทนที่อาจเกิดขึ้นในอนาคตได้ แต่ไม่ได้จำลองทุกสภาวะตลาด และไม่ได้รวมค่าธรรมเนียม ภาษี สภาพคล่อง หรือความผันผวนที่เปลี่ยนแปลงตามเวลา
+- VaR เป็นค่าประมาณจากเปอร์เซ็นไทล์ ไม่ใช่การรับประกันว่าจะไม่ขาดทุนเกินค่านั้น
+- ผลลัพธ์จัดทำขึ้นเพื่อการเรียนการสอน ไม่ใช่คำแนะนำทางการเงิน
 
-- Member A – `data_analysis.py`: stock data management and daily return calculation.
-- Member B – `simulation.py`: volatility analysis and Historical Bootstrap Monte Carlo.
-- Member C – `risk_report.py`: risk assessment and investment report.
-- `main.py` coordinates the modules and handles the terminal interface.
+## 8. การแบ่งหน้าที่ของสมาชิก
 
-## Testing and evidence
+- **สมาชิก A – `data_analysis.py`:** จัดการข้อมูลราคาหุ้นและคำนวณผลตอบแทนรายวัน
+- **สมาชิก B – `simulation.py`:** วิเคราะห์ความผันผวนและจำลอง Historical Bootstrap Monte Carlo
+- **สมาชิก C – `risk_report.py`:** ประเมินความเสี่ยงและจัดทำรายงานการลงทุน
+- **`main.py`:** ทำหน้าที่เป็นโปรแกรมหลัก เรียกใช้งานโมดูลของสมาชิกแต่ละคนและจัดการเมนู Terminal ไม่ได้รวบรวมโค้ดทุกโมดูลมาไว้ในไฟล์เดียว
 
-See `docs/test_plan.md` for test cases and actual execution status. Update the status and evidence only after running each case on the target computer. `demo_output.txt` is a sample transcript; replace or confirm it against a fresh local run before submission.
+## 9. การทดสอบและหลักฐานประกอบโครงงาน
+
+ดูกรณีทดสอบและสถานะการทดสอบได้ที่ `docs/test_plan.md` ให้ปรับสถานะและบันทึกหลักฐานหลังจากทดลองรันแต่ละกรณีบนเครื่องจริงเท่านั้น
+
+ไฟล์ `demo_output.txt` ในปัจจุบันเป็นแม่แบบสำหรับบันทึกผล ไม่ใช่หลักฐานการรันโปรแกรมฉบับสมบูรณ์ ต้องแทนที่หรือยืนยันเนื้อหาด้วยผลลัพธ์จากการทดลองรันจริงก่อนส่งงาน
